@@ -1,0 +1,758 @@
+/** Begin the entry styles here. **/
+
+@font-face {
+   font-family: 'dejavu-sans';
+   src: url('../fonts/DejaVuSansCondensed.ttf');
+}
+
+@font-face {
+   font-family: 'dejavu-sans';
+   font-weight: bold;
+   src: url('../fonts/DejaVuSansCondensed-Bold.ttf');
+}
+
+@font-face {
+   font-family: 'dejavu-sans';
+   font-style: italic;
+   src: url('../fonts/DejaVuSansCondensed-Oblique.ttf');
+}
+
+@font-face {
+   font-family: 'dejavu-sans';
+   font-style: italic;
+   font-weight: bold;
+   src: url('../fonts/DejaVuSansCondensed-BoldOblique.ttf');
+}
+
+*{
+  -webkit-tap-highlight-color: rgba(0,0,0,0); /* Prevent any object from being highlighted upon touch event*/
+  -webkit-font-smoothing: subpixel-antialiased; /* Force webkit to use sub-pixel antialiasing */
+  -webkit-text-size-adjust: none;
+  -webkit-touch-callout: none;
+  -webkit-spell-check: none;
+  -webkit-user-modify: read-only;
+  outline: none;
+}
+
+html,body {
+  margin: 0;
+  padding: 0;
+  border: 0;
+
+  background: white;
+
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+html {
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  font-family: 'dejavu-sans', "Ariel", "Helvetica", Sans-serif;
+  font-weight: normal;
+
+  min-height: 100%;
+  min-width: 100%;
+
+  word-wrap: break-word;
+}
+
+.wc {
+}
+.wc.selected {
+  background-color: gray;
+  color: white;
+}
+
+.pos {
+  padding: 0px 0px 33px 0px;
+  margin-bottom: 33px;
+  border-bottom: 2px solid rgb(206, 206, 206);
+}
+.pos:last-of-type {
+  padding-bottom: 0px;
+  border-bottom: 0px;
+  margin-bottom: 0px;
+}
+
+/* Give all top level divs some vertical spacing */
+/*.pos > div {*/
+  /*padding-top: 5px;*/
+  /*padding-bottom: 5px;*/
+/*}*/
+
+
+/* Headword */
+.pos > div.hw {
+  font-size: 1.5em;
+  display: inline-block;
+  padding-right: 10px;
+
+  padding-right: 0px !important;
+
+  max-width: 100%;
+}
+
+/* Pronunciation */
+.pos > div.pron {
+  display: inline-block;
+  padding-right: 10px;
+  max-width: 100%;
+}
+.pos span.pr {
+  color: gray;
+  vertical-align: 2px;
+}
+
+/* Parethesized status label */
+.pos > div.psl {
+  display: inline-block;
+}
+.pos span.psl {
+  color: gray;
+  vertical-align: 2px;
+}
+
+/* Function */
+.pos > div.func {
+}
+.pos > div.func > i {
+  color: gray;
+}
+.pos i.v {
+  color: gray;
+}
+
+/* Definition */
+.qdef {
+  background-color: rgb(228, 237, 249);
+  color: #222222;
+  margin: 8px 0px 0 0px;
+  padding: 10px 10px 10px 10px;
+}
+
+.qdef ul {
+  list-style-type: none;
+  padding: 0 0 8px 0;
+}
+
+.qdef ul li {
+  margin-top: 8px;
+}
+
+.pos > div.def {
+}
+
+/*.f {*/
+  /*color: rgb(183,129,50);*/
+  /*margin-top: 11px;*/
+/*}*/
+
+.fulldef {
+  color: rgb(183,129,50);
+}
+
+.collapsible {
+    /*background-color: #777;*/
+    color: rgb(183,129,50);
+    cursor: pointer;
+    padding: 13px;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 15px;
+}
+
+.collapsible:after{
+  content: '\25bc';
+  font-weight: bold;
+  float: right;
+  margin-left: 5px;
+}
+
+.active:after {
+  content: "\25b2";
+}
+
+.c-content {
+  padding: 10px, 10px, 10px, 10px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+  background-color: #f1f1f1;
+}
+
+/* Definition - Senses */
+ul.sens {
+  list-style-type: none;
+  padding: 0px;
+}
+.pos ul.sens li {
+  padding-bottom: 3px;
+}
+
+/** The vt tag. **/
+.pos > div.def ul.sens > li > .v {
+  display: block;
+  font-style: italic;
+  padding-bottom: 5px;
+  padding-top: 5px;
+}
+.pos .v + br {
+  margin: 0 0 -20px 0;
+}
+* html .pos .v {
+  margin: 0 0 0 0;
+}
+
+/* Definition - Inflected Forms */
+.pos > div.def > div.infl {
+  padding-top: 5px;
+}
+
+/* Definition - Cross References */
+.pos > div.def > div.cx {
+  padding-top: 5px;
+}
+
+/* Definition - Runons */
+.pos > div.def > ul.runon {
+  list-style-type: none;
+  padding-top: 10px;
+  padding-left: 0px;
+}
+.pos > div.def > ul.runon > li {
+  padding-bottom: 3px;
+}
+
+/* Example Sentences */
+.pos > div.sent {
+}
+.pos > div.sent > p {
+  font-weight: bold;
+  margin: 0px;
+}
+.pos > div.sent > ul {
+  margin-left: 0px;
+  padding-left: 20px;
+}
+.pos > div.sent > ul > li {
+  padding-bottom: 3px;
+}
+
+
+/* History */
+.pos > div.et {
+}
+.pos > div.et:empty {
+  padding:0px;
+}
+/* History: Origin */
+.pos > div.et > div.orig {
+  display: inline-block;
+}
+/* History: First Use */
+.pos > div.et > div.date {
+}
+
+/* Usage */
+.pos div.usage {
+}
+
+/* Related Words */
+.pos > div.syn {
+}
+.pos > div.syn > div.related > div:first-of-type {
+  padding-bottom: 5px;
+}
+.pos > div.syn > div.related > div:last-of-type {
+  padding-top: 5px;
+}
+.pos > div.syn > div.related > div:only-child {
+  padding: 0px;
+}
+/* Related Words: Synonyms */
+.pos > div.syn > div.related > div.syn {
+}
+/* Related Words: Antonyms */
+.pos > div.syn > div.related > div.ant {
+}
+
+
+
+/*
+ * General
+ *
+ */
+
+
+/* Zoom spacer */
+.zoom {
+ float: right;
+ width: 44px;
+ height: 15px;
+}
+
+
+/* Links */
+.pos a,
+.pos a:link,
+.pos a:visited,
+.pos a:hover,
+.pos a:active {
+  color: #11c;
+  text-decoration: none;
+}
+
+.pos a.selected {
+  background-color: gray;
+  color: white;
+}
+
+/* Audio Links */
+.pos a.au {
+  background: url(image/mdpi/definition-icon-audio.png) center no-repeat;
+  border: 0;
+  margin: 0 0 0 8px;
+  padding: 0;
+  min-width: 32px;
+  min-height: 32px;
+  vertical-align: -25%;
+  display: inline-block;
+  -webkit-background-size: contain;
+  background-size: contain;
+}
+
+.pos a.au.playing {
+  background: url(image/mdpi/definition-audio-loading.gif) center no-repeat;
+  -webkit-background-size: contain;
+  background-size: contain;
+}
+
+/* Photo Links */
+.pos a.photo {
+  background: url(image/mdpi/definition-icon-photo.png) center no-repeat;
+  border: 0;
+  margin: 0 0 0 8px;
+  padding: 0;
+  min-width: 32px;
+  min-height: 32px;
+  vertical-align: -25%;
+  display: inline-block;
+  -webkit-background-size: contain;
+  background-size: contain;
+}
+
+.pos a.dxt {
+  font-variant: small-caps;
+}
+
+.pos a.sxn {
+  font-variant: small-caps;
+}
+
+/* Etymology link */
+a.et_link {
+  font-variant: small-caps;
+}
+
+a.i_link {
+  font-style: italic;
+}
+
+/* favorite link */
+.pos a.favorite {
+  background: url(image/mdpi/definition-favorite-star-off.png) center no-repeat;
+  border: 0;
+  margin: 0 0 0 8px;
+  padding: 0;
+  min-width: 32px;
+  min-height: 32px;
+  vertical-align: -25%;
+  display: inline-block;
+  -webkit-background-size: contain;
+  background-size: contain;
+}
+.pos a.favorite.starred {
+  background: url(image/mdpi/definition-favorite-star-on.png) center no-repeat;
+  -webkit-background-size: contain;
+  background-size: contain;
+}
+
+/* Images */
+.art > .caption {
+  display: block;
+}
+.art > .photo {
+  display: block;
+  margin: auto;
+  max-width:100%;
+  height: auto;
+}
+
+/* art link */
+.pos a.art-link {
+  background: url(image/mdpi/definition-icon-photo.png) center no-repeat;
+  border: 0;
+  margin: 0 0 0 8px;
+  padding: 0;
+  min-width: 32px;
+  min-height: 32px;
+  vertical-align: -25%;
+  display: inline-block;
+  -webkit-background-size: contain;
+  background-size: contain;
+}
+
+/* scrabble search */
+.anagram-search {
+    padding-left: 10px;
+    padding-bottom: 20px
+}
+.anagram-search > a {
+    margin-left: -2px;
+}
+.anagram {
+    display: inline-block;
+}
+.anagram.pressed {
+    padding-top: 1px;
+    padding-left: 1px;
+}
+
+/* scrabble tiles */
+.tile {
+    border: 0;
+    padding: 0;
+    width: 32px;
+    height: 35px;
+    display: inline-block;
+    background: url(image/mdpi/definition-tile.png) center no-repeat;
+}
+.tile > .letter {
+    font-size: 1.0em;
+    font-weight: bold;
+    color: black;
+    vertical-align: middle;
+    line-height: 32px;
+    text-align: center;
+    width: 32px;
+    height: 35px;
+}
+.tile > .value {
+    font-size: 0.4em;
+    font-weight: bold;
+    color: black;
+    position: relative;
+    bottom: 21px;
+    left: -4px;
+    text-align: right;
+}
+
+/* POS Separators */
+.posno {
+  float: left;
+  font-size: 0.85em;
+  margin-top: 3px;
+  margin-left: 10px;
+}
+
+/*
+ *
+ * ORIGINAL CSS RULES FROM mwref2.css
+ *
+ */
+
+.pos a.iAs,
+.pos a.iAs nobr,
+a.iAs,
+a.iAs nobr {
+  font-variant: normal !important;
+}
+.pos a.kLink,
+.pos a.kLink nobr,
+a.kLink,
+a.kLink nobr {
+  font-variant: normal !important;
+}
+.pos .IL_AD {
+  font-family: "Times New Roman", "Times Serif", Serif;
+}
+
+.pos .sc {
+  font-variant: small-caps;
+}
+
+.pos .rom {
+  font-family: "Times New Roman", "Times Serif", Serif;
+}
+.pos ol {
+  margin-top: 10px;
+}
+.pos ol li {
+  font-weight: bold;
+  list-style-type: none;
+}
+.pos ul.backup_06_19_2009 {
+  margin: 0 0 10px 0;
+}
+.pos ul {
+  margin: 0 0 0 0;
+}
+.pos ul li.backup_06_19_2009 {
+  line-height: 18px;
+  list-style-type: none;
+  padding-bottom: 4px;
+}
+/*.pos ul li {
+  font-family: "Times New Roman", "Times Serif", Serif;
+  line-height: 16px;
+  list-style-type: none;
+  padding-bottom: 2px;
+}*/
+.pos strong sup {
+  font-size: 50%;
+  margin: 0;
+  padding: 0;
+  vertical-align: text-top;
+}
+.pos em {
+  font-style: italic;
+}
+.pos em.phr {
+  font-weight: bold;
+}
+.pos .dxn {
+  font-family: "Times New Roman", "Times Serif", serif;
+  font-style: normal;
+}
+.pos em.fr,
+.pos em.fr sub,
+.pos em.fr sup,
+.pos .fr,
+.pos .fr sub,
+.pos .fr sup {
+  font-family: "Times New Roman", "Times Serif", serif;
+  font-style: normal;
+}
+.pos .d sub {
+  font-size: 60%;
+}
+.pos strong {
+  font-family: arial, verdana, sans-serif;
+}
+.pos .d strong,
+.pos .r strong {
+  color: black;
+}
+.pos .uni,
+.pos .unicode {
+  font-style: normal;
+  font-weight: normal;
+  font-family: 'dejavu-sans', fantasy;
+}
+.pos .sn {
+  font-family: arial, verdana, sans-serif;
+  font-style: normal;
+  font-weight: bold;
+}
+.pos .snote-sym .unicode {
+  padding: 0 5px;
+  font-weight: bold;
+  font-size: .9rem;
+}
+
+/** Subsense labels. **/
+.pos .su {
+  font-family: arial, verdana, sans-serif;
+  font-style: normal;
+}
+
+.snum {
+  font-weight: bold;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.ssens div {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+/* Simple Definition - #1124 */
+.pos > div.sdef {
+   display: none;
+}
+
+/*additional */
+.padded-container {
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+
+.pos > div {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio: 1.5) {
+  .pos a.au {
+    background: url(image/hdpi/definition-icon-audio.png) center no-repeat;
+    -webkit-background-size: contain;
+    background-size: contain;
+
+  }
+
+  .pos a.au.playing {
+    background: url(image/hdpi/definition-audio-loading.gif) center no-repeat;
+    -webkit-background-size: contain;
+    background-size: contain;
+
+  }
+
+  .pos a.photo {
+    background: url(image/hdpi/definition-icon-photo.png) center no-repeat;
+    -webkit-background-size: contain;
+    background-size: contain;
+
+  }
+
+  /* art link */
+  .pos a.art-link {
+    background: url(image/hdpi/definition-icon-photo.png) center no-repeat;
+    -webkit-background-size: contain;
+    background-size: contain;
+
+  }
+
+  /* POS Separators */
+  .posno {
+    background: url(image/hdpi/definition-page-separator-flat.png) top left repeat-x;
+    -webkit-background-size: 320px 48px;
+  }
+  .pos-tab {
+    background: url(image/hdpi/definition-page-tag-flat.png) bottom center no-repeat;
+    -webkit-background-size: 50px 25px;
+    background-position-y: 22px;  /* controls tab background vert alignment */
+  }
+
+  /* Favorites */
+  .pos a.favorite {
+    background: url(image/hdpi/definition-favorite-star-off.png) center no-repeat;
+    -webkit-background-size: contain;
+    background-size: contain;
+  }
+  .pos a.favorite.starred {
+    background: url(image/hdpi/definition-favorite-star-on.png) center no-repeat;
+    -webkit-background-size: contain;
+    background-size: contain;
+  }
+
+  /* Scrabble Tiles */
+  .tile {
+    background: url(image/hdpi/definition-tile.png) center no-repeat;
+    -webkit-background-size: contain;
+    background-size: contain;
+  }
+}
+
+@media screen and (-webkit-min-device-pixel-ratio: 2.0) {
+
+  .pos a.au {
+    background: url(image/xhdpi/definition-icon-audio.png) center no-repeat;
+    -webkit-background-size: contain;
+    background-size: contain;
+  }
+  .pos a.au.playing {
+    background: url(image/xhdpi/definition-audio-loading.gif) center no-repeat;
+    -webkit-background-size: contain;
+    background-size: contain;
+  }
+
+  .pos a.photo {
+    background: url(image/xhdpi/definition-icon-photo.png) center no-repeat;
+    -webkit-background-size: contain;
+    background-size: contain;
+  }
+
+
+  /* POS Separators */
+  .posno {
+    background: url(image/xhdpi/definition-page-separator-flat.png) top left repeat-x;
+    -webkit-background-size: 320px 48px;
+  }
+  .pos-tab {
+    background: url(image/xhdpi/definition-page-tag-flat.png) bottom center no-repeat;
+    -webkit-background-size: 50px 25px;
+    background-position-y: 22px;  /* controls tab background vert alignment */
+  }
+
+  /* Favorites */
+  .pos a.favorite {
+    background: url(image/xhdpi/definition-favorite-star-off.png) center no-repeat;
+    -webkit-background-size: contain;
+    background-size: contain;
+  }
+  .pos a.favorite.starred {
+    background: url(image/xhdpi/definition-favorite-star-on.png) center no-repeat;
+    -webkit-background-size: contain;
+    background-size: contain;
+  }
+
+  /* Scrabble Tiles */
+  .tile {
+    background: url(image/xhdpi/definition-tile.png) center no-repeat;
+    -webkit-background-size: contain;
+    background-size: contain;
+  }
+
+  /* art link */
+  .pos a.art-link {
+    background: url(image/xhdpi/definition-icon-photo.png) center no-repeat;
+    -webkit-background-size: contain;
+    background-size: contain;
+  }
+}
+
+@media screen and (-webkit-min-device-pixel-ratio: 3.0) {
+
+  .pos a.au {
+    background: url(image/xxhdpi/definition-icon-audio.png) center no-repeat;
+    -webkit-background-size: contain;
+    background-size: contain;
+  }
+  .pos a.au.playing {
+    background: url(image/xxhdpi/definition-audio-loading.gif) center no-repeat;
+    -webkit-background-size: contain;
+    background-size: contain;
+  }
+
+  .pos a.photo {
+    background: url(image/xxhdpi/definition-icon-photo.png) center no-repeat;
+    -webkit-background-size: contain;
+    background-size: contain;
+  }
+
+
+  /* Favorites */
+  .pos a.favorite {
+    background: url(image/xxhdpi/definition-favorite-star-off.png) center no-repeat;
+    -webkit-background-size: contain;
+    background-size: contain;
+  }
+  .pos a.favorite.starred {
+    background: url(image/xxhdpi/definition-favorite-star-on.png) center no-repeat;
+    -webkit-background-size: contain;
+    background-size: contain;
+  }
+
+  /* art link */
+  .pos a.art-link {
+    background: url(image/xxhdpi/definition-icon-photo.png) center no-repeat;
+    -webkit-background-size: contain;
+    background-size: contain;
+  }
+}
