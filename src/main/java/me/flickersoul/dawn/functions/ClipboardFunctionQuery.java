@@ -12,15 +12,15 @@ import java.util.regex.Pattern;
 
 public class ClipboardFunctionQuery {
 
-    private static final String filePath = "jdbc:sqlite::resource:Dictionary/PRO.db";
+    private static final String FILE_PATH = "jdbc:sqlite::resource:Dictionary/PRO.db";
 
-    private static final String head ="<!DOCTYPE html>\n" +
+    private static final String HEAD ="<!DOCTYPE html>\n" +
             "<html>\n" +
             "<head>" +
             "</head>\n" +
             "<body>\n";
 
-    private static final String tail = "<script>\n" +
+    private static final String TAIL = "<script>\n" +
             "   var coll = document.getElementsByClassName(\"collapsible\");\n" +
             "       for (i = 0; i < coll.length; i++) {\n" +
             "           coll[i].addEventListener(\"click\", function() {\n" +
@@ -36,26 +36,42 @@ public class ClipboardFunctionQuery {
             "       function player(i){\n" +
             "           appPlayer.play(i);\n" +
             "       }\n" +
+            "       function lookup(word){\n" +
+            "           appPlayer.lookupWord(word)\n" +
+            "       }\n"+
             "</script>\n" +
             "</body>\n" +
             "</html>";
+
+    private static final String THE_TAIL =
+            "   <script>\n" +
+            "       function lookup(word){\n" +
+            "           appPlayer.lookupWord(word)\n" +
+            "       }\n" +
+            "   </script>\n" +
+            "</body>\n" +
+            "</html>";;
+
+    private static final String EMPTY_TEMPLATE = "<div style=\"text-align: center;\"> <h3> NOT FOUND </h3> <div>";
 
     static Connection connection;
 
     //定义查找的SQL
     static final String GET_ID_SQL_PART1 = "SELECT id FROM ";//做个测试，是大数据库查找快还是小数据库查找快
-    static final String GET_ID_SQL_PART2 = " WHERE value = ? OR index_id = ?;";
+    static final String GET_ID_SQL_PART2 = " WHERE value = ?;";
+    static final String GET_ID_SQL_PART3 = "SELECT id FROM ";
+    static final String GET_ID_SQL_PART4 = " WHERE index_id = ?";
 //    static final String GET_ID_TEST = "SELECT c0_id FROM all_words_content WHERE c1word_value = ?";
     static final String GET_DEF_SQL =  "SELECT contents FROM definitions WHERE id = ?";
     //定义发音筛选正则表达
     static final Pattern pattern = Pattern.compile("^[0-9]+");
-    static final Pattern processWordPattern = Pattern.compile("[^'a-zA-Z0-9-]");
+    static final Pattern processWordPattern = Pattern.compile("[^'a-zA-Z0-9-\\s]");
     static Boolean isAutoPlaying = true;
 
     //初始化connection
     static {
         try {
-            connection = DBConnection.getConnection(filePath);
+            connection = DBConnection.getConnection(FILE_PATH);
             System.out.println("Connected!");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -65,12 +81,45 @@ public class ClipboardFunctionQuery {
     public static boolean lookupWord(String word){
         try {
             new KindSoftAPIQuery(word, "KingSoftAPIThread").start();
-            PreparedStatement getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART1 + word.charAt(0) + GET_ID_SQL_PART2); //最快
+            word = ClipboardFunctionQuery.processWords(word);
+            PreparedStatement getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART1 + word.toLowerCase().charAt(0) + GET_ID_SQL_PART2); //最快
             getIDPreparedStatement.setString(1, word);
-            getIDPreparedStatement.setString(2, word);
             ResultSet idResultSet = getIDPreparedStatement.executeQuery();
 
-            if(!idResultSet.next()) return false;
+            if(!idResultSet.next()){
+                getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART1 + word.toLowerCase().charAt(0) + GET_ID_SQL_PART2); //最快
+                getIDPreparedStatement.setString(1, word.toLowerCase());
+                idResultSet = getIDPreparedStatement.executeQuery();
+                if(!idResultSet.next()) {
+                    getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART1 + word.toLowerCase().charAt(0) + GET_ID_SQL_PART2);
+                    char[] cs=word.toLowerCase().toCharArray();
+                    cs[0]-=32;
+                    getIDPreparedStatement.setString(1, String.valueOf(cs));
+                    idResultSet = getIDPreparedStatement.executeQuery();
+                    if (!idResultSet.next()) {
+                        getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART3 + word.toLowerCase().charAt(0) + GET_ID_SQL_PART4);
+                        getIDPreparedStatement.setString(1, word.replaceAll(" ", "").replaceAll("-", ""));
+                        idResultSet = getIDPreparedStatement.executeQuery();
+                        if (!idResultSet.next()) {
+                            getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART3 + word.toLowerCase().charAt(0) + GET_ID_SQL_PART4);
+                            getIDPreparedStatement.setString(1, word.toLowerCase().replaceAll(" ", "").replaceAll("-", ""));
+                            idResultSet = getIDPreparedStatement.executeQuery();
+                            if(!idResultSet.next()) {
+                                getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART3 + word.toLowerCase().charAt(0) + GET_ID_SQL_PART4);
+                                cs=word.toLowerCase().replaceAll(" ", "").replaceAll("-", "").toCharArray();
+                                cs[0]-=32;
+                                getIDPreparedStatement.setString(1, String.valueOf(cs));
+                                idResultSet = getIDPreparedStatement.executeQuery();
+                                if (!idResultSet.next()){
+                                    EnDefRegion.html.setValue(EMPTY_TEMPLATE);
+                                    Thesaurus.html.setValue(EMPTY_TEMPLATE);
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             String id= idResultSet.getString(1);
 
@@ -82,13 +131,24 @@ public class ClipboardFunctionQuery {
 
             Document document = Jsoup.parse(defResultSet.getString(1));
 
+            Elements aTag = document.getElementsByTag("a");
+            for(Element sub : aTag){
+                String temp = sub.attr("href");
+                if(temp.equals("#") || temp.equals("'#'") || temp.startsWith("x-mw://lookup/")){
+                    sub.attr("onclick", "lookup(\"" + sub.text() + "\")");
+                    sub.attr("href", "javascript.void(0)");
+                }
+            }
+
             Element definition = document.selectFirst("div#definition");
 
             Element thesaurus = document.selectFirst("div#thesaurus");
+
             if(thesaurus != null){
-                Thesaurus.html.setValue(thesaurus.toString());
+//                System.out.println(HEAD + thesaurus.toString() + THE_TAIL);
+                Thesaurus.html.setValue(HEAD + thesaurus.toString() + THE_TAIL);
             }else{
-                Thesaurus.html.setValue("<div style=\"text-align: center;\">No Thesaurus</div>");
+                Thesaurus.html.setValue(EMPTY_TEMPLATE);
             }
 
             definition.select(".et").remove();
@@ -100,6 +160,7 @@ public class ClipboardFunctionQuery {
 
             for(Element singleAudio : audioElements) {
                 String dir = singleAudio.attr("href");
+
                 singleAudio.attr("href", "javascript.void(0)");
 
                 singleAudio.attr("onclick", "player("+ num +")");
@@ -167,7 +228,9 @@ public class ClipboardFunctionQuery {
 
             definition.appendChild(new Element("div"));
 
-            EnDefRegion.html.setValue(head + definition.toString() + tail);
+//            System.out.println(HEAD + definition.toString() + TAIL);
+
+            EnDefRegion.html.setValue(HEAD + definition.toString() + TAIL);
 
             return true;
         }catch (SQLException e){

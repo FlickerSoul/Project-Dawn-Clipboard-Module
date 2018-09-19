@@ -5,9 +5,16 @@ import javafx.scene.media.AudioClip;
 public class JSPlay {
     public static String[] audioURL = new String[15];
 
+    public void lookupWord(String word){
+        ClipboardFunctionQuery.lookupWord(word);
+    }
+
     public void play(int serial){
         new audioThread(serial).start();
-        //完善逻辑
+    }
+
+    public void netPlay(String url){
+        new audioThread(url).start();
     }
 
     static class audioThread extends Thread{
@@ -24,9 +31,10 @@ public class JSPlay {
 
         @Override
         public void run(){
-            if(serial != -1)
+            if(serial != -1){
                 new AudioClip(audioURL[serial]).play();
-            else
+                serial = -1;
+            }else
                 new AudioClip(url).play();
         }
     }

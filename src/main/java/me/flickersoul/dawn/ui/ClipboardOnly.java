@@ -9,6 +9,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.ToolBar;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import me.flickersoul.dawn.functions.ClipboardFunctionQuery;
@@ -26,6 +27,14 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
     public static SimpleBooleanProperty isFocused = new SimpleBooleanProperty(true);
     public static BooleanProperty isListening = new SimpleBooleanProperty(true);
 
+    ToolBar topToolBar;
+    ClipboardSearchBar clipboardSearchBar;
+    BorderPane borderPane;
+    ClipboardPane clipboardPane;
+    IOSButton isAlwaysOn;
+    IOSButton isListenerOn;
+    IOSButton isAutoPlaying;
+
     String tempWord;
 
     private final Clipboard sysClip = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -37,13 +46,13 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
     }
 
     protected void initClipboardPane(Stage clipboardStage){
-        ToolBar topToolBar = new ToolBar();
-        ClipboardSearchBar clipboardSearchBar = new ClipboardSearchBar();
-        BorderPane borderPane = new BorderPane();
-        ClipboardPane clipboardTab = new ClipboardPane();
-        IOSButton isAlwaysOn = new IOSButton(30, false);
-        IOSButton isListenerOn = new IOSButton(30, true);
-        IOSButton isAutoPlaying = new IOSButton(30, true);
+        topToolBar = new ToolBar();
+        clipboardSearchBar = new ClipboardSearchBar();
+        borderPane = new BorderPane();
+        clipboardPane = new ClipboardPane();
+        isAlwaysOn = new IOSButton(30, false);
+        isListenerOn = new IOSButton(30, true);
+        isAutoPlaying = new IOSButton(30, true);
 
 
         isAlwaysOn.switchOn.addListener((observable, oldValue, newValue) -> clipboardStage.setAlwaysOnTop(newValue));
@@ -52,7 +61,7 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
                 isListening.setValue(true);
             else
                 isListening.setValue(false);
-                isFocused.setValue(!isFocused.getValue());
+            isFocused.setValue(!isFocused.getValue());
         });
         isAutoPlaying.switchOn.addListener((observable, oldValue, newValue) -> ClipboardFunctionQuery.setAutoPlaying(newValue));
 
@@ -61,19 +70,18 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
         topToolBar.getItems().addAll(isAlwaysOn, isListenerOn, isAutoPlaying, clipboardSearchBar);
 
         Scene scene = new Scene(borderPane, 360, 450);
-        borderPane.setCenter(clipboardTab);
+        borderPane.setCenter(clipboardPane);
         borderPane.setTop(topToolBar);
 
         isIconified.addListener((observable, oldValue, newValue) -> {
+            Platform.runLater(() -> {
+                clipboardStage.setIconified(newValue);
+            });
             if(newValue){
                 System.out.println("min");
-                Platform.runLater(() -> {
-                    clipboardStage.setIconified(newValue);
-                });
             }else{
                 System.out.println("focus");
                 Platform.runLater(() -> {
-                    clipboardStage.setIconified(newValue);
                     clipboardStage.requestFocus();
                 });
             }
@@ -117,6 +125,12 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
             provider.stop();
         });
 
+        scene.setOnKeyReleased(event -> {
+            if(event.getCode() == KeyCode.ESCAPE){
+                isIconified.setValue(true);
+            }
+        });
+
         isIconified.setValue(true);
 
         Transferable trans = sysClip.getContents(this);
@@ -155,13 +169,17 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
                 e.printStackTrace();
             }
 
-            System.out.println("copied: " + object);
+            long ST = System.currentTimeMillis();
 
-            if(ClipboardFunctionQuery.lookupWord(ClipboardFunctionQuery.processWords(object.toString()).toLowerCase())) {
+            ClipboardSearchBar.text.setValue(object.toString());
+
+            if(ClipboardFunctionQuery.lookupWord(object.toString())) {
                 System.out.println("Got Word");
                 isIconified.setValue(false);
                 isFocused.setValue(!isFocused.getValue());
             }
+
+            System.out.println("\n" + "time consumed: " + (System.currentTimeMillis() - ST) + "ms");
         }
     }
 

@@ -10,12 +10,12 @@ import java.io.IOException;
 import java.net.URL;
 
 public class KindSoftAPIQuery extends Thread {
-    private static final String head = "http://dict-co.iciba.com/api/dictionary.php?w=";
-    private static final String tail = "&key=43F176D8E538CE59EAEEBB0FB3F2E5C1";
+    private static final String HEAD = "http://dict-co.iciba.com/api/dictionary.php?w=";
+    private static final String TAIL = "&key=43F176D8E538CE59EAEEBB0FB3F2E5C1";
 
     String word;
 
-    private String template = "<html>\n" +
+    private final String TEMPLATE = "<html>\n" +
             "    <head></head>\n" +
             "    <body style=\"font: 15px;\">\n" +
             "        <div class=\"entry\" id=\"definition\">\n" +
@@ -75,6 +75,8 @@ public class KindSoftAPIQuery extends Thread {
             "    </body>\n" +
             "</html>";
 
+    private final String EMPTY_TEMPLATE = "<div> <h3> 查找错误,无结果 </h3> </div>";
+
     public KindSoftAPIQuery(String word, String name){
         super(name);
         this.word = word;
@@ -88,8 +90,8 @@ public class KindSoftAPIQuery extends Thread {
 
     public void parseWordFromKSAPI(String word){
         try {
-            Document apiPage = Jsoup.parse(new URL(head + word + tail), 2000);
-            Document wordTemplate = Jsoup.parse(template);
+            Document apiPage = Jsoup.parse(new URL(HEAD + word + TAIL), 2000);
+            Document wordTemplate = Jsoup.parse(TEMPLATE);
             wordTemplate.getElementById("key").text(word);
             Elements pron_url = apiPage.select("pron");
             if(pron_url.size() == 2){
@@ -105,15 +107,24 @@ public class KindSoftAPIQuery extends Thread {
                 wordTemplate.selectFirst("div#0>span").text("null");
                 wordTemplate.selectFirst("div#1>span").text("null");
             }
+
             Elements defi = apiPage.select("pos");
             Element ul_defi = wordTemplate.getElementById("ul_defi");
-            for(Element sub : defi){
-                ul_defi.appendChild(new Element("li").text(sub.text()));
-                ul_defi.appendChild(new Element("li").text(sub.nextElementSibling().text()));
+            if(defi.size() == 0){
+                ul_defi.appendChild(new Element("li").text("无结果"));
+            }else {
+                for (Element sub : defi) {
+                    ul_defi.appendChild(new Element("li").text(sub.text()));
+                    ul_defi.appendChild(new Element("li").text(sub.nextElementSibling().text()));
+                }
+//                wordTemplate.getElementsByClass("qdef").first().appendChild(ul_defi);
             }
-            wordTemplate.getElementsByClass("qdef").first().appendChild(ul_defi);
+
             Elements sent = apiPage.select("orig");
             Element ul_sent = wordTemplate.getElementById("ul_sent");
+            if(sent.size() == 0){
+                ul_sent.appendChild(new Element("li").text("无结果"));
+            }
             for(Element sub : sent){
                 ul_sent.appendChild(new Element("li").text(sub.text()).attr("style", "margin-top: 4px; margin-bottom: 2px;"));
                 ul_sent.appendChild(new Element("li").text(sub.nextElementSibling().text()).attr("style", "margin-top: 2px; margin-bottom: 4px;"));
@@ -121,6 +132,7 @@ public class KindSoftAPIQuery extends Thread {
 
             ChDefRegion.html.setValue(wordTemplate.toString());
         } catch (IOException e) {
+            ChDefRegion.html.setValue(EMPTY_TEMPLATE);
             e.printStackTrace();
         }
 
