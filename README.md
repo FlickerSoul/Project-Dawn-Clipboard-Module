@@ -1,10 +1,11 @@
 # Project-Dawn-Clipboard-Module
+## 禁止作为商用
 
 剪贴板查词模块
 
 ## Features
 
-* 附带带本地韦氏词典（从Andriod上pirate下来的数据库，9w词族，未在repo里提供）
+* 附带带本地韦氏词典（从Andriod上截取下来的数据库，9w词族，未在repo里提供）
 * 在线金山词霸查词API
 * 可在线发音（缓存功能还没弄好）
 * CTRL+alt+shift+p 唤起和最小化
