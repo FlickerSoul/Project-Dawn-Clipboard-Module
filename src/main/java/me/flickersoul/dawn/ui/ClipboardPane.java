@@ -3,11 +3,17 @@ package me.flickersoul.dawn.ui;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import me.flickersoul.dawn.functions.ClipboardFunctionQuery;
+import me.flickersoul.dawn.functions.HistoryArray;
 
 public class ClipboardPane extends TabPane {
     EnDefRegion enDefRegion;
     ChDefRegion chDefRegion;
     Thesaurus thesaurus;
+
 
     SingleSelectionModel<Tab> selectionModel;
 

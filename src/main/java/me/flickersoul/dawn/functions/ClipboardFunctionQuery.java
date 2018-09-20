@@ -1,5 +1,6 @@
 package me.flickersoul.dawn.functions;
 
+import me.flickersoul.dawn.ui.ClipboardSearchBar;
 import me.flickersoul.dawn.ui.EnDefRegion;
 import me.flickersoul.dawn.ui.Thesaurus;
 import org.jsoup.Jsoup;
@@ -180,10 +181,10 @@ public class ClipboardFunctionQuery {
 
                 System.out.println(audioURL);
 
-                JSPlay.audioURL[num++] = audioURL;
+                JSPlay.setAudioURL(num++, audioURL);
             }
 
-            if(isAutoPlaying && audioElements.size() != 0 && JSPlay.audioURL[0] != null) new JSPlay.audioThread(0).start();
+            if(isAutoPlaying && audioElements.size() != 0 && JSPlay.getFirstAudioURL() != null) new JSPlay.audioThread(0).start();
 
             Elements fullDef = definition.select(".fulldef").addClass("collapsible");
 

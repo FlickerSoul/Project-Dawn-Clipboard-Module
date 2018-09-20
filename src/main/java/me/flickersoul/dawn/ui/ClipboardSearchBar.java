@@ -1,25 +1,23 @@
 package me.flickersoul.dawn.ui;
 
 import javafx.beans.property.SimpleStringProperty;
+import javafx.scene.control.Tooltip;
 import me.flickersoul.dawn.functions.ClipboardFunctionQuery;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
+import me.flickersoul.dawn.functions.HistoryArray;
 
-import java.util.ArrayList;
-import java.util.Deque;
 
 public class ClipboardSearchBar extends HBox {
-    TextField searchBox;
-    Button searchButton;
+    private TextField searchBox;
+    private Button searchButton;
     private static String last;
     private static String first;
 
-    public static Deque<String>[] historyQueue = new Deque[25];
-
-    public static SimpleStringProperty text = new SimpleStringProperty();
+    private static SimpleStringProperty text = new SimpleStringProperty();
 
     public ClipboardSearchBar(){
         searchBox = new TextField();
@@ -29,19 +27,26 @@ public class ClipboardSearchBar extends HBox {
                 first = searchBox.getText();
                 if(first != null && !first.equals(last)){
                     last = first;
-                    ClipboardFunctionQuery.lookupWord(last);
+                    if(ClipboardFunctionQuery.lookupWord(last)){
+                        HistoryArray.putSearchResult(last);
+                    }
+                    searchBox.selectAll();
                 }
             }
         });
 
         searchButton = new Button("Search");
         searchButton.setId("search-button");
+        searchButton.setTooltip(new Tooltip("Search Words"));
         searchButton.setOnMouseClicked(e -> {
             first = searchBox.getText();
             if(first != null && !first.equals(last)){
                 System.out.println("first: " + first);
                 last = first;
-                ClipboardFunctionQuery.lookupWord(last);
+                if(ClipboardFunctionQuery.lookupWord(last)){
+                    HistoryArray.putSearchResult(last);
+                }
+                searchBox.selectAll();
             }
         });
 
@@ -56,5 +61,9 @@ public class ClipboardSearchBar extends HBox {
     public void requestSearchBoxFocused(){
         searchBox.requestFocus();
         searchBox.selectAll();
+    }
+
+    public static void setText(String text){
+        ClipboardSearchBar.text.setValue(text);
     }
 }

@@ -3,6 +3,7 @@ package me.flickersoul.dawn.ui;
 import javafx.animation.FillTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.Parent;
@@ -52,5 +53,11 @@ public class IOSButton extends Parent {
         });
 
         switchOn.setValue(initState);
+    }
+
+    public void setToolTip(String tip){
+        Platform.runLater(() -> {
+            this.setToolTip(tip);
+        });
     }
 }
