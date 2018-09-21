@@ -9,7 +9,7 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.net.URL;
 
-public class KindSoftAPIQuery extends Thread {
+public class KingSoftAPIQuery implements Runnable {
     private static final String HEAD = "http://dict-co.iciba.com/api/dictionary.php?w=";
     private static final String TAIL = "&key=43F176D8E538CE59EAEEBB0FB3F2E5C1";
 
@@ -77,18 +77,18 @@ public class KindSoftAPIQuery extends Thread {
 
     private final String EMPTY_TEMPLATE = "<div> <h3> 查找错误,无结果 </h3> </div>";
 
-    public KindSoftAPIQuery(String word, String name){
-        super(name);
-        this.word = word;
-    }
-
     @Override
     public void run(){
-        this.parseWordFromKSAPI(word);
+        this.parseWordFromKSAPI(this.word);
     }
 
+    public KingSoftAPIQuery setWord(String word){
+        this.word = word;
+        return this;
+    }
 
     public void parseWordFromKSAPI(String word){
+        if(word == null) return;
         try {
             Document apiPage = Jsoup.parse(new URL(HEAD + word + TAIL), 2000);
             Document wordTemplate = Jsoup.parse(TEMPLATE);

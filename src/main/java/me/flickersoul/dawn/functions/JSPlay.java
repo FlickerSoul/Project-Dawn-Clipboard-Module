@@ -1,10 +1,16 @@
 package me.flickersoul.dawn.functions;
 
 import javafx.scene.media.AudioClip;
+import javafx.scene.media.MediaException;
 import me.flickersoul.dawn.ui.ClipboardSearchBar;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 public class JSPlay {
-    private static String[] audioURL = new String[15];
+    protected static String[] audioURL = new String[15];
+    private static AudioThread audioThread = new AudioThread();
+    private static ExecutorService singleThreadPool = Executors.newSingleThreadExecutor((runnable) -> new Thread(runnable, "Audio Playing Thread"));
 
     public void lookupWord(String word){
         ClipboardSearchBar.setText(word);
@@ -14,45 +20,15 @@ public class JSPlay {
     }
 
     public void play(int serial){
-        new audioThread(serial).start();
+        singleThreadPool.execute(audioThread.setSource(serial));
     }
 
     public void netPlay(String url){
-        new audioThread(url).start();
+        singleThreadPool.execute(audioThread.setSource(url));
     }
 
-    static class audioThread extends Thread{
-        static AudioClip audioClip;
-        int serial = -1;
-        String url;
-
-        public audioThread(){
-            super("Audio Playing Thread");
-        }
-
-        public audioThread(int serial){
-            this.serial = serial;
-        }
-
-        public audioThread(String url){
-            this.url = url;
-        }
-
-        @Override
-        public void run(){
-            if(serial != -1){
-                if(audioClip != null)
-                    audioClip.stop();
-                audioClip = new AudioClip(audioURL[serial]);
-                audioClip.play();
-                serial = -1;
-            }else {
-                if(audioClip != null)
-                    audioClip.stop();
-                audioClip = new AudioClip(url);
-                audioClip.play();
-            }
-        }
+    public static void autoPlay(){
+        singleThreadPool.execute(audioThread.getFirst());
     }
 
     public static void setAudioURL(int serial, String aurioURL){
@@ -61,5 +37,54 @@ public class JSPlay {
 
     public static String getFirstAudioURL(){
         return JSPlay.audioURL[0];
+    }
+
+    public static String getAudioURLByNum(int serial){
+        return audioURL[serial];
+    }
+
+    public static void terminatePool(){
+        singleThreadPool.shutdown();
+    }
+}
+
+class AudioThread implements Runnable{
+
+    private AudioClip audioClip;
+    private int serial = -1;
+    private String url;
+
+    @Override
+    public void run(){
+        try {
+            if (serial != -1) {
+                audioClip = new AudioClip(JSPlay.getAudioURLByNum(serial));
+                serial = -1;
+            } else {
+                audioClip = new AudioClip(url);
+            }
+            audioClip.play();
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }catch (MediaException e){
+            e.printStackTrace();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public AudioThread setSource(String url){
+        this.url = url;
+        return this;
+    }
+
+    public AudioThread setSource(int serial){
+        this.serial = serial;
+        return this;
+    }
+
+    public AudioThread getFirst(){
+        serial = 0;
+        return this;
     }
 }

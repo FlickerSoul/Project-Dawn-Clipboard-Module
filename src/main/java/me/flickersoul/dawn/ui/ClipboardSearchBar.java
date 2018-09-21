@@ -2,6 +2,7 @@ package me.flickersoul.dawn.ui;
 
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.Tooltip;
+import javafx.scene.input.KeyEvent;
 import me.flickersoul.dawn.functions.ClipboardFunctionQuery;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
@@ -22,7 +23,7 @@ public class ClipboardSearchBar extends HBox {
     public ClipboardSearchBar(){
         searchBox = new TextField();
         searchBox.setPromptText("Type here to search...");
-        searchBox.setOnKeyReleased(e -> {
+        searchBox.addEventFilter(KeyEvent.KEY_RELEASED, e -> {
             if(e.getCode() == KeyCode.ENTER){
                 first = searchBox.getText();
                 if(first != null && !first.equals(last)){
@@ -41,7 +42,6 @@ public class ClipboardSearchBar extends HBox {
         searchButton.setOnMouseClicked(e -> {
             first = searchBox.getText();
             if(first != null && !first.equals(last)){
-                System.out.println("first: " + first);
                 last = first;
                 if(ClipboardFunctionQuery.lookupWord(last)){
                     HistoryArray.putSearchResult(last);

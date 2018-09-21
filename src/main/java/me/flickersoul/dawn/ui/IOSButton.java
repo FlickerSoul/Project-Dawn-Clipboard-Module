@@ -54,10 +54,4 @@ public class IOSButton extends Parent {
 
         switchOn.setValue(initState);
     }
-
-    public void setToolTip(String tip){
-        Platform.runLater(() -> {
-            this.setToolTip(tip);
-        });
-    }
 }

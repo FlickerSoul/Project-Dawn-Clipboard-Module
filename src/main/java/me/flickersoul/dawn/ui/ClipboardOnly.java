@@ -12,10 +12,12 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import me.flickersoul.dawn.functions.ClipboardFunctionQuery;
 import me.flickersoul.dawn.functions.HistoryArray;
+import me.flickersoul.dawn.functions.JSPlay;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,7 +33,12 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
     public static BooleanProperty isListening = new SimpleBooleanProperty(true);
     private final KeyCombination priviousWordCom = new KeyCodeCombination(KeyCode.LEFT, KeyCombination.ALT_DOWN);
     private final KeyCombination latterWordCom = new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN);
+    private final KeyCombination enTab = new KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
+    private final KeyCombination chTab = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
+    private final KeyCombination thTab = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
+    private final KeyCombination playAudio = new KeyCodeCombination(KeyCode.P, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
 
+    private String lastWord = "";
 
     ToolBar topToolBar;
     ClipboardSearchBar clipboardSearchBar;
@@ -63,10 +70,6 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
         isListenerOn = new IOSButton(30, true);
         isAutoPlaying = new IOSButton(30, true);
 
-        isAlwaysOn.setToolTip("Set Always On Top");
-        isListenerOn.setToolTip("Set Whether Listenning To Clipboard");
-        isAutoPlaying.setToolTip("Set Auto Play Audio");
-
         isAlwaysOn.switchOn.addListener((observable, oldValue, newValue) -> clipboardStage.setAlwaysOnTop(newValue));
         isListenerOn.switchOn.addListener((observable, oldValue, newValue) -> {
             if(newValue)
@@ -91,7 +94,7 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
             });
             if(newValue){
                 System.out.println("min");
-            }else{
+            }else {
                 System.out.println("focus");
                 Platform.runLater(() -> {
                     clipboardStage.requestFocus();
@@ -123,36 +126,47 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
 
         Provider provider = Provider.getCurrentProvider(false);
         provider.register(KeyStroke.getKeyStroke("ctrl alt shift P"), hotKey -> {
-            if(isIconified.getValue()) {
+            if(clipboardStage.isIconified()) {
+                isIconified.setValue(true);
                 isIconified.setValue(false);
             }
             else if(!clipboardStage.isFocused())
                 Platform.runLater(() -> clipboardStage.requestFocus());
-            else
+            else {
+                isIconified.setValue(false);
                 isIconified.setValue(true);
+            }
         });
 
 
         clipboardStage.setOnCloseRequest(e -> {
             provider.stop();
+            JSPlay.terminatePool();
+            ClipboardFunctionQuery.terminatePool();
         });
 
-        scene.setOnKeyReleased(event -> {
+        scene.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if(event.getCode() == KeyCode.ESCAPE){
-                System.out.println("esc");
+                isIconified.setValue(false);
                 isIconified.setValue(true);
             }
         });
 
         scene.setOnKeyReleased(event -> {
-            if(priviousWordCom.match(event)){
+            if(playAudio.match(event)){
+                JSPlay.autoPlay();
+            }else if(priviousWordCom.match(event)){
                 HistoryArray.getPreviousWord();
             }else if(latterWordCom.match(event)){
                 HistoryArray.getLatterWord();
+            }else if(enTab.match(event)){
+                clipboardPane.focusOnEn();
+            }else if(chTab.match(event)){
+                clipboardPane.focusOnCh();
+            }else if(thTab.match(event)){
+                clipboardPane.focusOnTh();
             }
         });
-
-        isIconified.setValue(true);
 
         Transferable trans = sysClip.getContents(this);
         sysClip.setContents(trans, this);
@@ -176,10 +190,13 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
         }catch(Exception e){
             try {
                 sleep(300);
-            } catch (InterruptedException e1) {
-                e1.printStackTrace();
+                this.regainOwnership(c.getContents(this));
+            } catch (InterruptedException ie) {
+                ie.printStackTrace();
+            }catch (Exception ex){
+                ex.printStackTrace();
+                Platform.exit();
             }
-            this.lostOwnership(c, t);
             e.printStackTrace();
         }
     }
@@ -198,20 +215,21 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
                 e.printStackTrace();
             }
 
-//            long ST = System.currentTimeMillis();
-
             tempWord = object.toString();
 
-            ClipboardSearchBar.setText(tempWord);
+            if(!tempWord.equals(lastWord)) {
 
-            if(ClipboardFunctionQuery.lookupWord(tempWord)) {
-                HistoryArray.putSearchResult(tempWord);
-                System.out.println("Got Word");
-                isIconified.setValue(false);
-                isFocused.setValue(!isFocused.getValue());
+                ClipboardSearchBar.setText(tempWord);
+
+                if (ClipboardFunctionQuery.lookupWord(tempWord)) {
+                    HistoryArray.putSearchResult(tempWord);
+                    System.out.println("Got Word");
+                    isIconified.setValue(false);
+                    isFocused.setValue(!isFocused.getValue());
+                }
+
+                lastWord = tempWord;
             }
-
-//            System.out.println("\n" + "time consumed: " + (System.currentTimeMillis() - ST) + "ms");
         }
     }
 

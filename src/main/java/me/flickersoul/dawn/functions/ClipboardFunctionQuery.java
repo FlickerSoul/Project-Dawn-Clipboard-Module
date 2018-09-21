@@ -1,6 +1,5 @@
 package me.flickersoul.dawn.functions;
 
-import me.flickersoul.dawn.ui.ClipboardSearchBar;
 import me.flickersoul.dawn.ui.EnDefRegion;
 import me.flickersoul.dawn.ui.Thesaurus;
 import org.jsoup.Jsoup;
@@ -9,6 +8,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.sql.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.regex.Pattern;
 
 public class ClipboardFunctionQuery {
@@ -79,9 +80,14 @@ public class ClipboardFunctionQuery {
         }
     }
 
+    private static ExecutorService singThreadPool = Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, "KingSoft API Searching Thread"));
+    private static KingSoftAPIQuery kingSoftAPIQuery = new KingSoftAPIQuery();
+
     public static boolean lookupWord(String word){
+        long ST = System.currentTimeMillis();
+
         try {
-            new KindSoftAPIQuery(word, "KingSoftAPIThread").start();
+            singThreadPool.execute(kingSoftAPIQuery.setWord(word));
             word = ClipboardFunctionQuery.processWords(word);
             PreparedStatement getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART1 + word.toLowerCase().charAt(0) + GET_ID_SQL_PART2); //最快
             getIDPreparedStatement.setString(1, word);
@@ -184,8 +190,6 @@ public class ClipboardFunctionQuery {
                 JSPlay.setAudioURL(num++, audioURL);
             }
 
-            if(isAutoPlaying && audioElements.size() != 0 && JSPlay.getFirstAudioURL() != null) new JSPlay.audioThread(0).start();
-
             Elements fullDef = definition.select(".fulldef").addClass("collapsible");
 
             num = 0;
@@ -233,8 +237,18 @@ public class ClipboardFunctionQuery {
 
             EnDefRegion.html.setValue(HEAD + definition.toString() + TAIL);
 
+            if(isAutoPlaying && audioElements.size() != 0 && JSPlay.getFirstAudioURL() != null) JSPlay.autoPlay();
+
+            System.out.println("Time Consumed: " + (System.currentTimeMillis() - ST) + "ms");
+
             return true;
         }catch (SQLException e){
+            e.printStackTrace();
+            return false;
+        }catch (StringIndexOutOfBoundsException e){
+            e.printStackTrace();
+            return false;
+        }catch (Exception e){
             e.printStackTrace();
             return false;
         }
@@ -246,5 +260,9 @@ public class ClipboardFunctionQuery {
 
     public static void setAutoPlaying(Boolean isAutoPlaying){
         ClipboardFunctionQuery.isAutoPlaying = isAutoPlaying;
+    }
+
+    public static void terminatePool(){
+        singThreadPool.shutdown();
     }
 }
