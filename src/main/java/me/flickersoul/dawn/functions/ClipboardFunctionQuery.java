@@ -1,5 +1,6 @@
 package me.flickersoul.dawn.functions;
 
+import javafx.application.Platform;
 import me.flickersoul.dawn.ui.EnDefRegion;
 import me.flickersoul.dawn.ui.Thesaurus;
 import org.jsoup.Jsoup;
@@ -7,9 +8,14 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
 public class ClipboardFunctionQuery {
@@ -72,24 +78,29 @@ public class ClipboardFunctionQuery {
     static final Pattern processWordPattern = Pattern.compile("[^'a-zA-Z0-9-\\s]");
     static Boolean isAutoPlaying = true;
 
-    //初始化connection
+    private static ExecutorService singThreadPool_API = Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, "KingSoft API Searching Thread"));
+    private static ExecutorService multiThreadsPool_Audio = Executors.newFixedThreadPool(5, runnable -> new Thread(runnable, "Audio Caching Thread_Copy Thread"));
+
+    private static KingSoftAPIQuery kingSoftAPIQuery;
+
+
+    //静态初始化connection 和 Thread Pool
     static {
         try {
             connection = DBConnection.getConnection(FILE_PATH);
+            kingSoftAPIQuery = new KingSoftAPIQuery();
             System.out.println("Connected!");
         } catch (SQLException e) {
+            Platform.exit();
             e.printStackTrace();
         }
     }
-
-    private static ExecutorService singThreadPool = Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, "KingSoft API Searching Thread"));
-    private static KingSoftAPIQuery kingSoftAPIQuery = new KingSoftAPIQuery();
 
     public static boolean lookupWord(String word){
         long ST = System.currentTimeMillis();
 
         try {
-            singThreadPool.execute(kingSoftAPIQuery.setWord(word));
+            singThreadPool_API.execute(kingSoftAPIQuery.setWord(word));
             word = ClipboardFunctionQuery.processWords(word);
             PreparedStatement getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART1 + word.toLowerCase().charAt(0) + GET_ID_SQL_PART2); //最快
             getIDPreparedStatement.setString(1, word);
@@ -169,28 +180,35 @@ public class ClipboardFunctionQuery {
 
             for(Element singleAudio : audioElements) {
                 String dir = singleAudio.attr("href");
+                String audioURL;
+                if(CacheAudio.isFileExisted(dir)) {
+                    audioURL = CacheAudio.fileDirBuilder(dir);
+                }else{
+                    singleAudio.attr("href", "javascript.void(0)");
 
-                singleAudio.attr("href", "javascript.void(0)");
+                    singleAudio.attr("onclick", "player(" + num + ")");
 
-                singleAudio.attr("onclick", "player("+ num +")");
+                    singleAudio.append("<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" t=\"1536995979877\" class=\"icon\" style=\"\" viewBox=\"0 0 1109 1024\" version=\"1.1\" p-id=\"1888\" width=\"16\" height=\"16\"><path " + "id=\"" + dir + "svg\" " + "d=\"M35.754667 338.176v348.501333h233.6l292.138666 290.346667V47.701333L269.354667 338.176H35.754667z m788.650666 174.208c0-104.533333-58.453333-191.701333-146.090666-232.362667v464.64c87.637333-40.618667 146.090667-127.658667 146.090666-232.277333zM678.314667 1.28v121.984c169.472 52.309333 292.138667 203.264 292.138666 389.162667 0 185.856-122.666667 336.896-292.138666 389.12v122.026666c233.685333-52.352 409.002667-261.418667 409.002666-511.146666 0-249.728-175.317333-458.837333-409.002666-511.146667z\" fill=\"#000000\"/></svg>");
 
-                singleAudio.append("<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" t=\"1536995979877\" class=\"icon\" style=\"\" viewBox=\"0 0 1109 1024\" version=\"1.1\" p-id=\"1888\" width=\"16\" height=\"16\"><path " + "id=\"" + dir + "svg\" " + "d=\"M35.754667 338.176v348.501333h233.6l292.138666 290.346667V47.701333L269.354667 338.176H35.754667z m788.650666 174.208c0-104.533333-58.453333-191.701333-146.090666-232.362667v464.64c87.637333-40.618667 146.090667-127.658667 146.090666-232.277333zM678.314667 1.28v121.984c169.472 52.309333 292.138667 203.264 292.138666 389.162667 0 185.856-122.666667 336.896-292.138666 389.12v122.026666c233.685333-52.352 409.002667-261.418667 409.002666-511.146666 0-249.728-175.317333-458.837333-409.002666-511.146667z\" fill=\"#000000\"/></svg>");
+                    audioURL = "https://media.merriam-webster.com/audio/prons/en/us/mp3/";
+                    if (dir.startsWith("bix")) {
+                        audioURL += "bix/" + dir + ".mp3";
+                    } else if (dir.startsWith("gg")) {
+                        audioURL += "gg/" + dir + ".mp3";
+                    } else if (pattern.matcher(dir).find()) {
+                        audioURL += "number/" + dir + ".mp3";
+                    } else {
+                        audioURL += dir.charAt(0) + "/" + dir + ".mp3";
+                    }
 
-                String audioURL = "https://media.merriam-webster.com/audio/prons/en/us/mp3/";
-                if (dir.startsWith("bix")) {
-                    audioURL += "bix/" + dir + ".mp3";
-                } else if (dir.startsWith("gg")) {
-                    audioURL += "gg/" + dir + ".mp3";
-                } else if (pattern.matcher(dir).find()) {
-                    audioURL += "number/" + dir + ".mp3";
-                } else {
-                    audioURL += dir.charAt(0) + "/" + dir + ".mp3";
+                    multiThreadsPool_Audio.execute(CacheAudio.newCacheAudioThread(audioURL, dir));
                 }
-
                 System.out.println(audioURL);
 
                 JSPlay.setAudioURL(num++, audioURL);
             }
+
+            if(isAutoPlaying && audioElements.size() != 0 && JSPlay.getFirstAudioURL() != null) JSPlay.autoPlay();
 
             Elements fullDef = definition.select(".fulldef").addClass("collapsible");
 
@@ -239,8 +257,6 @@ public class ClipboardFunctionQuery {
 
             EnDefRegion.setHtml(HEAD + definition.toString() + TAIL);
 
-            if(isAutoPlaying && audioElements.size() != 0 && JSPlay.getFirstAudioURL() != null) JSPlay.autoPlay();
-
             System.out.println("Time Consumed: " + (System.currentTimeMillis() - ST) + "ms");
 
             return true;
@@ -256,10 +272,6 @@ public class ClipboardFunctionQuery {
         }
     }
 
-    public static void processAmazonWords(String word){
-
-    }
-
     public static String processWords(String word){
         return processWordPattern.matcher(word).replaceAll("").trim();
     }
@@ -269,6 +281,7 @@ public class ClipboardFunctionQuery {
     }
 
     public static void terminatePool(){
-        singThreadPool.shutdown();
+        singThreadPool_API.shutdown();
+        multiThreadsPool_Audio.shutdown();
     }
 }

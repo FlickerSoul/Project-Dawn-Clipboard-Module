@@ -1,92 +1,65 @@
 package me.flickersoul.dawn.functions;
 
-import javafx.scene.media.AudioClip;
-
-import java.io.*;
-import java.net.MalformedURLException;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.util.regex.Pattern;
 
-public class CacheAudio extends Thread {
-    String dir;
-    URL url;
-    static final Pattern pattern = Pattern.compile("^[0-9]+");
+public class CacheAudio implements Runnable {
+    private String fileURL;
+    private String fileName;
+    private static final String DIR_PATH = System.getProperty("user.home") + File.separator + "Documents" + File.separator + "PD_Cache" + File.separator;
+    private static final String FILE_PATH = "file:/" + DIR_PATH.replaceAll("\\\\", "/");
+    private static final boolean isWin = System.getProperty("os.name").equals("Windows 10");
+    private static final File file_path_dir = new File(DIR_PATH);
 
-    @Override
-    public void run(){
-        System.out.println("Start Caching Audios");
-        if(dir!=null){
-            String audioURL = "https://media.merriam-webster.com/audio/prons/en/us/mp3/";
-            if (dir.startsWith("bix")) {
-                audioURL += "bix/";
-            } else if (dir.startsWith("gg")) {
-                audioURL += "gg/";
-            } else if (pattern.matcher(dir).find()) {
-                audioURL += "number/";
-            } else {
-                audioURL += dir.charAt(0) + "/" ;
-            }
-            audioURL += dir + ".mp3";
+    static {
+        file_path_dir.mkdirs();
+        if (file_path_dir.canRead() && file_path_dir.canWrite()) {
+            System.out.println("Access To Cache Folder Successfully");
+        } else {
             try {
-                URLConnection URLconnection = new URL(audioURL).openConnection();
-                InputStream inputStream = URLconnection.getInputStream();
-                OutputStream outputStream = new FileOutputStream(new File("src\\main\\resources\\Files\\" + dir + ".mp3"));
-                byte[] buffer = new byte[4096];
-                int len;
-                while ((len = inputStream.read(buffer)) > 0) {
-                    outputStream.write(buffer, 0, len);
-                }
-                outputStream.close();
-                inputStream.close();
-            } catch (FileNotFoundException e) {
-                System.out.println("Cannot Find File");
-                e.printStackTrace();
-            } catch (MalformedURLException e) {
-                System.out.println("Cannot Solve URL");
-                e.printStackTrace();
+                throw new IOException("Cannot Access To Cache Folder!");
             } catch (IOException e) {
-                System.out.println("Cannot Read/Write Files");
                 e.printStackTrace();
             }
-        }else if(url != null){
-            try {
-                URLConnection URLconnection = url.openConnection();
-                InputStream inputStream = URLconnection.getInputStream();
-                OutputStream outputStream = new FileOutputStream(new File("src\\main\\resources\\Files\\" + dir + ".mp3"));
-                byte[] buffer = new byte[4096];
-                int len;
-                while ((len = inputStream.read(buffer)) > 0) {
-                    outputStream.write(buffer, 0, len);
-                }
-                outputStream.close();
-                inputStream.close();
-            } catch (FileNotFoundException e) {
-                System.out.println("Cannot Find File");
-                e.printStackTrace();
-            } catch (MalformedURLException e) {
-                System.out.println("Cannot Solve URL");
-                e.printStackTrace();
-            } catch (IOException e) {
-                System.out.println("Cannot Read/Write Files");
-                e.printStackTrace();
-            }
-        }else{
-            System.out.println("No URL found.\nExited");
         }
     }
 
-    public static void audioPlay(String audioURL){
-        AudioClip audioClip = new AudioClip(audioURL);
-        audioClip.play();
+    public CacheAudio(String fileURL, String fileName) {
+        this.fileURL = fileURL;
+        this.fileName = DIR_PATH + fileName + ".mp3";
     }
 
-    public CacheAudio(String urlLink){
-        this.dir = urlLink;
+    @Override
+    public void run() {
+        if(!isWin) return;
+        try (BufferedInputStream in = new BufferedInputStream(new URL(fileURL).openStream()); FileOutputStream fileOutputStream = new FileOutputStream(new File(fileName))) {
+            byte dataBuffer[] = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
+                fileOutputStream.write(dataBuffer, 0, bytesRead);
+            }
+            System.out.println("Finished Caching " + this.fileName + " from " + fileURL);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public CacheAudio(URL url){
-        this.url = url;
+    public static boolean isFileExisted(String dir) {
+        return new File(CacheAudio.dirBuilder(dir)).canRead();
     }
 
+    public static String dirBuilder(String dir) {
+        return DIR_PATH + dir + ".mp3";
+    }
+
+    public static String fileDirBuilder(String dir) {
+        return FILE_PATH + dir + ".mp3";
+    }
+
+    public static CacheAudio newCacheAudioThread(String fileURL, String fileName) throws IOException {
+        return new CacheAudio(fileURL, fileName);
+    }
 }
