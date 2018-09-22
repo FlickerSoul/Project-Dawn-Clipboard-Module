@@ -3,6 +3,7 @@ package me.flickersoul.dawn.ui;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import me.flickersoul.dawn.functions.ClipboardFunctionQuery;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
@@ -26,10 +27,12 @@ public class ClipboardSearchBar extends HBox {
         searchBox.addEventFilter(KeyEvent.KEY_RELEASED, e -> {
             if(e.getCode() == KeyCode.ENTER){
                 first = searchBox.getText();
-                if(first != null && !first.equals(last)){
+                if(!first.equals(null) && !first.equals(last)){
                     last = first;
                     if(ClipboardFunctionQuery.lookupWord(last)){
                         HistoryArray.putSearchResult(last);
+                    }else{
+                        HistoryArray.setEmptyFlagTrue();
                     }
                     searchBox.selectAll();
                 }
@@ -39,12 +42,14 @@ public class ClipboardSearchBar extends HBox {
         searchButton = new Button("Search");
         searchButton.setId("search-button");
         searchButton.setTooltip(new Tooltip("Search Words"));
-        searchButton.setOnMouseClicked(e -> {
+        searchButton.addEventFilter(MouseEvent.MOUSE_CLICKED, e -> {
             first = searchBox.getText();
-            if(first != null && !first.equals(last)){
+            if(!first.equals(null) && !first.equals(last)){
                 last = first;
                 if(ClipboardFunctionQuery.lookupWord(last)){
                     HistoryArray.putSearchResult(last);
+                }else{
+                    HistoryArray.setEmptyFlagTrue();
                 }
                 searchBox.selectAll();
             }

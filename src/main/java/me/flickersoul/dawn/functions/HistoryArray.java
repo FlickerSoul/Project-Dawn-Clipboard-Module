@@ -1,5 +1,8 @@
 package me.flickersoul.dawn.functions;
 
+import javafx.scene.Parent;
+import javafx.scene.control.Button;
+
 public class HistoryArray {
     private static String[] historyArray = new String[30];
 
@@ -8,7 +11,11 @@ public class HistoryArray {
     private static int head = 29; // pointer <= head; pointer >= tail;
     private static int tail = 0;
     private static int pointer = 0;
-    private static int lastSearchResult = 0; //后续实现
+    private static boolean emptyFlag = false;
+
+    public static void setEmptyFlagTrue(){
+        emptyFlag = true;
+    }
 
     public static void putSearchResult(String word){
         if (++head == 30) {
@@ -30,7 +37,6 @@ public class HistoryArray {
     public static void insertSearchResult(String word){
         if(pointer == head || pointer == tail){
             putSearchResult(word);
-            return;
         }else if(pointer < head && head < tail) {
             for(int i = head; i >= pointer + 1; i--){
                 historyArray[i + 1] = historyArray[i];
@@ -66,6 +72,11 @@ public class HistoryArray {
     }
 
     public static void getPreviousWord(){
+        if(emptyFlag){
+            ClipboardFunctionQuery.lookupWord(historyArray[pointer]);
+            return;
+        }
+
         if(pointer == tail){
             return;
         }
@@ -74,7 +85,7 @@ public class HistoryArray {
             pointer = 29;
         }
 
-        if(historyArray[pointer] == null){
+        if(historyArray[pointer] == null || historyArray[pointer].equals(null)){
             if(++pointer == 30){
                 pointer = 0;
             }
@@ -84,7 +95,6 @@ public class HistoryArray {
     }
 
     public static void getLatterWord(){
-
         if(pointer == head){
             if(historyArray[pointer] != null)
                 return ;

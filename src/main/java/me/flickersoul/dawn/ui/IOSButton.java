@@ -3,7 +3,6 @@ package me.flickersoul.dawn.ui;
 import javafx.animation.FillTransition;
 import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
-import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.Parent;
@@ -13,7 +12,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
 
 public class IOSButton extends Parent {
-    public BooleanProperty switchOn = new SimpleBooleanProperty(false);
+    private BooleanProperty switchOn = new SimpleBooleanProperty(false);
 
     private TranslateTransition translateTransition = new TranslateTransition(Duration.seconds(0.25));
 
@@ -53,5 +52,9 @@ public class IOSButton extends Parent {
         });
 
         switchOn.setValue(initState);
+    }
+
+    protected BooleanProperty getSwitchOn(){
+        return switchOn;
     }
 }

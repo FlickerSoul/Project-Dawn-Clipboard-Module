@@ -7,6 +7,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 public class KingSoftAPIQuery implements Runnable {
@@ -88,7 +89,7 @@ public class KingSoftAPIQuery implements Runnable {
     }
 
     public void parseWordFromKSAPI(String word){
-        if(word == null) return;
+        if(word.equals(null)) return;
         try {
             Document apiPage = Jsoup.parse(new URL(HEAD + word + TAIL), 2000);
             Document wordTemplate = Jsoup.parse(TEMPLATE);
@@ -130,11 +131,12 @@ public class KingSoftAPIQuery implements Runnable {
                 ul_sent.appendChild(new Element("li").text(sub.nextElementSibling().text()).attr("style", "margin-top: 2px; margin-bottom: 4px;"));
             }
 
-            ChDefRegion.html.setValue(wordTemplate.toString());
+            ChDefRegion.setHtml(wordTemplate.toString());
+        } catch (MalformedURLException e){
+            ChDefRegion.setHtml(EMPTY_TEMPLATE);
         } catch (IOException e) {
-            ChDefRegion.html.setValue(EMPTY_TEMPLATE);
+            ChDefRegion.setHtml(EMPTY_TEMPLATE);
             e.printStackTrace();
         }
-
     }
 }

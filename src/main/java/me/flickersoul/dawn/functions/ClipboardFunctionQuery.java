@@ -56,6 +56,8 @@ public class ClipboardFunctionQuery {
 
     private static final String EMPTY_TEMPLATE = "<div style=\"text-align: center;\"> <h3> NOT FOUND </h3> <div>";
 
+    private static String suffix = "";
+
     static Connection connection;
 
     //定义查找的SQL
@@ -118,8 +120,8 @@ public class ClipboardFunctionQuery {
                                 getIDPreparedStatement.setString(1, String.valueOf(cs));
                                 idResultSet = getIDPreparedStatement.executeQuery();
                                 if (!idResultSet.next()){
-                                    EnDefRegion.html.setValue(EMPTY_TEMPLATE);
-                                    Thesaurus.html.setValue(EMPTY_TEMPLATE);
+                                    EnDefRegion.setHtml(EMPTY_TEMPLATE);
+                                    Thesaurus.setHtml(EMPTY_TEMPLATE);
                                     return false;
                                 }
                             }
@@ -153,9 +155,9 @@ public class ClipboardFunctionQuery {
 
             if(thesaurus != null){
 //                System.out.println(HEAD + thesaurus.toString() + THE_TAIL);
-                Thesaurus.html.setValue(HEAD + thesaurus.toString() + THE_TAIL);
+                Thesaurus.setHtml(HEAD + thesaurus.toString() + THE_TAIL);
             }else{
-                Thesaurus.html.setValue(EMPTY_TEMPLATE);
+                Thesaurus.setHtml(EMPTY_TEMPLATE);
             }
 
             definition.select(".et").remove();
@@ -235,7 +237,7 @@ public class ClipboardFunctionQuery {
 
 //            System.out.println(HEAD + definition.toString() + TAIL);
 
-            EnDefRegion.html.setValue(HEAD + definition.toString() + TAIL);
+            EnDefRegion.setHtml(HEAD + definition.toString() + TAIL);
 
             if(isAutoPlaying && audioElements.size() != 0 && JSPlay.getFirstAudioURL() != null) JSPlay.autoPlay();
 
@@ -252,6 +254,10 @@ public class ClipboardFunctionQuery {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public static void processAmazonWords(String word){
+
     }
 
     public static String processWords(String word){

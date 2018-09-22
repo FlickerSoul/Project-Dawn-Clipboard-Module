@@ -1,6 +1,9 @@
 package me.flickersoul.dawn.ui;
 
 
+import javafx.scene.control.ContextMenu;
+import javafx.scene.input.MouseButton;
+import me.flickersoul.dawn.functions.ClipboardFunctionQuery;
 import me.flickersoul.dawn.functions.JSPlay;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
@@ -11,20 +14,37 @@ import javafx.scene.web.WebView;
 import netscape.javascript.JSObject;
 
 public class EnDefRegion extends Tab {
-    private WebView definition;
+    private WebView webView;
     private WebEngine webEngine;
     private JSPlay app;
-    public static SimpleStringProperty html = new SimpleStringProperty();
+    private ContextMenu contextMenu;
+    private static SimpleStringProperty html = new SimpleStringProperty();
+
+    private String selection;
 
     public EnDefRegion(){
         super("English Definition");
         this.setClosable(false);
 
         app = new JSPlay();
-        definition = new WebView();
-        webEngine = definition.getEngine();
+        webView = new WebView();
+        webEngine = webView.getEngine();
+        contextMenu = WebContextMenu.getContextMenu();
 
-        System.out.println(this.getClass().getClassLoader().getResource("CSS/definition-common.css").toExternalForm());
+        webView.setContextMenuEnabled(false);
+        webView.setOnMousePressed(event -> {
+            if (event.getButton() == MouseButton.SECONDARY){
+                selection = (String)webView.getEngine().executeScript("window.getSelection().toString()");
+                if(selection.toCharArray().length == 0){
+                    contextMenu.show(webView, event.getScreenX(), event.getScreenY());
+                }else{
+                    ClipboardFunctionQuery.lookupWord(selection);
+                }
+            }else {
+                contextMenu.hide();
+            }
+        });
+
         Platform.runLater(() -> webEngine.setUserStyleSheetLocation(this.getClass().getClassLoader().getResource("CSS/definition-common.css").toExternalForm()));
         webEngine.setJavaScriptEnabled(true);
         webEngine.loadContent("<div></div>");
@@ -41,6 +61,10 @@ public class EnDefRegion extends Tab {
             });
         }));
 
-        this.setContent(definition);
+        this.setContent(webView);
+    }
+
+    public static void setHtml(String text){
+        html.setValue(text);
     }
 }
