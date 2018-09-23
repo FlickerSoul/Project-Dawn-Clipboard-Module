@@ -43,7 +43,7 @@ public class ChDefRegion extends Tab {
             }
         });
 
-        Platform.runLater(() -> webEngine.setUserStyleSheetLocation(this.getClass().getClassLoader().getResource("CSS/definition-common.css").toExternalForm()));
+        Platform.runLater(() -> webEngine.setUserStyleSheetLocation(this.getClass().getClassLoader().getResource("css/definition-common.css").toExternalForm()));
         webEngine.setJavaScriptEnabled(true);
         webEngine.loadContent("<div></div>");
         webEngine.getLoadWorker().stateProperty().addListener(((observable, oldValue, newValue) -> {

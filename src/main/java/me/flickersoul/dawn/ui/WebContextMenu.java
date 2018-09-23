@@ -10,8 +10,8 @@ public class WebContextMenu extends ContextMenu{
     private static WebContextMenu webContextMenu = new WebContextMenu();
 
     public WebContextMenu(){
-        previousWord = new MenuItem("Previous (Alt + →)");
-        latterWord = new MenuItem("Forward (Alt + ←)");
+        previousWord = new MenuItem("Previous (Alt + ←)");
+        latterWord = new MenuItem("Forward (Alt + →)");
 
         previousWord.setOnAction(event -> HistoryArray.getPreviousWord());
         latterWord.setOnAction(event -> HistoryArray.getLatterWord());

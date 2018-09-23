@@ -59,6 +59,7 @@ public class ClipboardSearchBar extends HBox {
             searchBox.setText(newValue);
         });
 
+        this.setSpacing(3);
         this.setPadding(new Insets(2, 2, 2, 2));
         this.getChildren().addAll(searchBox, searchButton);
     }

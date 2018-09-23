@@ -9,6 +9,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.ToolBar;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -30,7 +31,7 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
     private static SimpleBooleanProperty isIconified = new SimpleBooleanProperty(false);
     private static SimpleBooleanProperty isFocused = new SimpleBooleanProperty(true);
     private static BooleanProperty isListening = new SimpleBooleanProperty(true);
-    private final KeyCombination priviousWordCom = new KeyCodeCombination(KeyCode.LEFT, KeyCombination.ALT_DOWN);
+    private final KeyCombination previousWordCom = new KeyCodeCombination(KeyCode.LEFT, KeyCombination.ALT_DOWN);
     private final KeyCombination latterWordCom = new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN);
     private final KeyCombination enTab = new KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
     private final KeyCombination chTab = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
@@ -66,10 +67,10 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
         clipboardSearchBar = new ClipboardSearchBar();
         borderPane = new BorderPane();
         clipboardPane = new ClipboardPane();
-        isAlwaysOn = new IOSButton(30, false);
-        isListenerOn = new IOSButton(30, true);
-        isAutoPlaying = new IOSButton(30, true);
-        isReadingFromKindle = new IOSButton(30, false);
+        isAlwaysOn = new IOSButton(30, false, "Whether Always On Top");
+        isListenerOn = new IOSButton(30, true, "Whether Listen To Clipboard");
+        isAutoPlaying = new IOSButton(30, true, "Whether Auto Play Audio");
+        isReadingFromKindle = new IOSButton(30, false, "Whether Toggle Kindle Mode");
 
         isAlwaysOn.getSwitchOn().addListener((observable, oldValue, newValue) -> clipboardStage.setAlwaysOnTop(newValue));
         isListenerOn.getSwitchOn().addListener((observable, oldValue, newValue) -> {
@@ -86,7 +87,7 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
         topToolBar.setPadding(new Insets(5, 5, 5, 5));
         topToolBar.getItems().addAll(isAlwaysOn, isListenerOn, isAutoPlaying, isReadingFromKindle, clipboardSearchBar);
 
-        Scene scene = new Scene(borderPane, 360, 450);
+        Scene scene = new Scene(borderPane, 370, 460);
         borderPane.setCenter(clipboardPane);
         borderPane.setTop(topToolBar);
 
@@ -110,8 +111,10 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
         });
 
         isListening.addListener((ob, oldV, newV) -> {
-            if(newV)
+            if(newV) {
+                this.regainOwnership(sysClip.getContents(this));
                 System.out.println("Start Listening");
+            }
             else
                 System.out.println("Postponed Listening...");
         });
@@ -123,7 +126,7 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
         });
 
         Provider provider = Provider.getCurrentProvider(false);
-        provider.register(KeyStroke.getKeyStroke("ctrl alt shift P"), hotKey -> {
+        provider.register(KeyStroke.getKeyStroke("ctrl alt shift O"), hotKey -> {
             if(clipboardStage.isIconified()) {
                 isIconified.setValue(true);
                 isIconified.setValue(false);
@@ -135,7 +138,6 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
                 isIconified.setValue(true);
             }
         });
-
 
         clipboardStage.setOnCloseRequest(e -> {
             provider.stop();
@@ -153,7 +155,7 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
         scene.setOnKeyReleased(event -> {
             if(playAudio.match(event)){
                 JSPlay.autoPlay();
-            }else if(priviousWordCom.match(event)){
+            }else if(previousWordCom.match(event)){
                 HistoryArray.getPreviousWord();
             }else if(latterWordCom.match(event)){
                 HistoryArray.getLatterWord();
@@ -170,6 +172,10 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
         sysClip.setContents(trans, this);
         System.out.println("Listening to board...");
 
+        clipboardSearchBar.requestSearchBoxFocused();
+
+        clipboardStage.setTitle("Dawn: Clipboard Listener");
+        clipboardStage.getIcons().add(new Image(this.getClass().getClassLoader().getResource("icon/ico3.png").toExternalForm()));
         clipboardStage.setScene(scene);
         clipboardStage.show();
         //sense set
@@ -177,6 +183,7 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
 
     @Override
     public void lostOwnership(Clipboard c, Transferable t) {
+        if(!isListening.getValue())return;
         try{
             sleep(150);
         }catch(Exception e){
@@ -200,7 +207,6 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
     }
 
     private void processContents(Transferable t) {
-        if(!isListening.getValue())return;
         if(t.isDataFlavorSupported(DataFlavor.stringFlavor)) {
 
             Object object = "";
@@ -224,9 +230,8 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
 
             if(isMultiCopyingAllowed || !tempWord.equals(lastWord)) {
 
-                ClipboardSearchBar.setText(tempWord);
-
                 if (ClipboardFunctionQuery.lookupWord(tempWord)) {
+                    ClipboardSearchBar.setText(tempWord);
                     HistoryArray.putSearchResult(tempWord);
                     System.out.println("Got Word");
                     isIconified.setValue(false);

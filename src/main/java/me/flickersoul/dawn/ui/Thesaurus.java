@@ -30,7 +30,7 @@ public class Thesaurus extends Tab {
         webView = new WebView();
         webEngine = webView.getEngine();
         webEngine.loadContent("<div></div>");
-        webEngine.setUserStyleSheetLocation(this.getClass().getClassLoader().getResource("CSS/definition-common.css").toExternalForm());
+        webEngine.setUserStyleSheetLocation(this.getClass().getClassLoader().getResource("css/definition-common.css").toExternalForm());
 
         webView.setContextMenuEnabled(false);
         webView.setOnMousePressed(event -> {

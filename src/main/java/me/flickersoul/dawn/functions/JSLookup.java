@@ -1,6 +1,5 @@
 package me.flickersoul.dawn.functions;
 
-import me.flickersoul.dawn.ui.ClipboardOnly;
 import me.flickersoul.dawn.ui.ClipboardSearchBar;
 
 public class JSLookup {

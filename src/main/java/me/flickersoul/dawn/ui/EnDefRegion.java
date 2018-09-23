@@ -18,9 +18,8 @@ public class EnDefRegion extends Tab {
     private WebEngine webEngine;
     private JSPlay app;
     private ContextMenu contextMenu;
-    private static SimpleStringProperty html = new SimpleStringProperty();
-
     private String selection;
+    private static SimpleStringProperty html = new SimpleStringProperty();
 
     public EnDefRegion(){
         super("English Definition");
@@ -45,7 +44,7 @@ public class EnDefRegion extends Tab {
             }
         });
 
-        Platform.runLater(() -> webEngine.setUserStyleSheetLocation(this.getClass().getClassLoader().getResource("CSS/definition-common.css").toExternalForm()));
+        Platform.runLater(() -> webEngine.setUserStyleSheetLocation(this.getClass().getClassLoader().getResource("css/definition-common.css").toExternalForm()));
         webEngine.setJavaScriptEnabled(true);
         webEngine.loadContent("<div></div>");
         webEngine.getLoadWorker().stateProperty().addListener(((observable, oldValue, newValue) -> {

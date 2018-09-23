@@ -1,12 +1,7 @@
 package me.flickersoul.dawn.functions;
 
-import javafx.scene.Parent;
-import javafx.scene.control.Button;
-
 public class HistoryArray {
     private static String[] historyArray = new String[30];
-
-    private static String[] tempArray = new String[30];
 
     private static int head = 29; // pointer <= head; pointer >= tail;
     private static int tail = 0;
@@ -89,6 +84,7 @@ public class HistoryArray {
             if(++pointer == 30){
                 pointer = 0;
             }
+            return;
         }
 
         ClipboardFunctionQuery.lookupWord(historyArray[pointer]);

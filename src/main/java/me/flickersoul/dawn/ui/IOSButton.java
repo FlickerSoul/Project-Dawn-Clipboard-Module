@@ -6,6 +6,7 @@ import javafx.animation.TranslateTransition;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.scene.Parent;
+import javafx.scene.control.Tooltip;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
@@ -21,7 +22,7 @@ public class IOSButton extends Parent {
     private ParallelTransition parallelTransition = new ParallelTransition(translateTransition, fillTransition);
 
 
-    public IOSButton(int wid_size, boolean initState){
+    public IOSButton(int wid_size, boolean initState, String toolHit){
         Rectangle base = new Rectangle(wid_size, wid_size>>1);
         base.setArcHeight(wid_size>>1);
         base.setArcWidth(wid_size>>1);
@@ -51,6 +52,7 @@ public class IOSButton extends Parent {
             switchOn.set(!switchOn.get());
         });
 
+        Tooltip.install(this, new Tooltip(toolHit));
         switchOn.setValue(initState);
     }
 

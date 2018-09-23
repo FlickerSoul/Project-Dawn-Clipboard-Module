@@ -1,7 +1,7 @@
 package me.flickersoul.dawn.functions;
 
 public enum DBList {
-    DictionaryDB("src/main/resources/Dictionary/dictionary.db", "Dictionary DB", "dictionary"),
+    DictionaryDB("src/main/resources/dic/dictionary.db", "dic DB", "dictionary"),
     UnfDB("src/main/resources/PersonalFolder/UnfDB.db", "Unfamiliar Words DB", "words"),
     FDB("src/main/resources/PersonalFolder/FDB.db", "Familiar Words DB", "words"),
     DetailsDB("src/main/resources/PersonalFolder/DetailsDB.db", "Word Details DB", "words", ""),

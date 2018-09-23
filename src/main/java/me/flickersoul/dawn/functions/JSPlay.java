@@ -66,6 +66,7 @@ class AudioThread implements Runnable{
             audioClip.play();
         }catch (NullPointerException e){
             e.printStackTrace();
+
         }catch (MediaException e){
             e.printStackTrace();
         }catch (Exception e){

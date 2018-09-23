@@ -23,10 +23,10 @@ public class DBConnection {
         try{
             String URL;
 
-            URL = "src/main/resources/Dictionary/PRO.db";
+            URL = "src/main/resources/dic/PRO.db";
             System.out.println("Connecting to " + URL);
             PRODBConnection = DriverManager.getConnection("jdbc:sqlite:" + URL);
-            System.out.println("Connect to Dictionary DB Successfully");
+            System.out.println("Connect to dic DB Successfully");
 
 
             URL = "src/main/resources/PersonalFolder/UnfDB.db";

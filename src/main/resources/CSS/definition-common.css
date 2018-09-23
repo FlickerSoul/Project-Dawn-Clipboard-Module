@@ -314,32 +314,9 @@ ul.sens {
 
 /* Audio Links */
 .pos a.au {
-  background: url(image/mdpi/definition-icon-audio.png) center no-repeat;
   border: 0;
   margin: 0 0 0 8px;
   padding: 0;
-  min-width: 32px;
-  min-height: 32px;
-  vertical-align: -25%;
-  display: inline-block;
-  -webkit-background-size: contain;
-  background-size: contain;
-}
-
-.pos a.au.playing {
-  background: url(image/mdpi/definition-audio-loading.gif) center no-repeat;
-  -webkit-background-size: contain;
-  background-size: contain;
-}
-
-/* Photo Links */
-.pos a.photo {
-  background: url(image/mdpi/definition-icon-photo.png) center no-repeat;
-  border: 0;
-  margin: 0 0 0 8px;
-  padding: 0;
-  min-width: 32px;
-  min-height: 32px;
   vertical-align: -25%;
   display: inline-block;
   -webkit-background-size: contain;
@@ -361,25 +338,6 @@ a.et_link {
 
 a.i_link {
   font-style: italic;
-}
-
-/* favorite link */
-.pos a.favorite {
-  background: url(image/mdpi/definition-favorite-star-off.png) center no-repeat;
-  border: 0;
-  margin: 0 0 0 8px;
-  padding: 0;
-  min-width: 32px;
-  min-height: 32px;
-  vertical-align: -25%;
-  display: inline-block;
-  -webkit-background-size: contain;
-  background-size: contain;
-}
-.pos a.favorite.starred {
-  background: url(image/mdpi/definition-favorite-star-on.png) center no-repeat;
-  -webkit-background-size: contain;
-  background-size: contain;
 }
 
 /* Images */
@@ -462,7 +420,7 @@ a.i_link {
 
 /*
  *
- * ORIGINAL CSS RULES FROM mwref2.css
+ * ORIGINAL css RULES FROM mwref2.css
  *
  */
 
@@ -596,163 +554,4 @@ a.kLink nobr {
 .pos > div {
     padding-left: 15px;
     padding-right: 15px;
-}
-
-@media screen and (-webkit-min-device-pixel-ratio: 1.5) {
-  .pos a.au {
-    background: url(image/hdpi/definition-icon-audio.png) center no-repeat;
-    -webkit-background-size: contain;
-    background-size: contain;
-
-  }
-
-  .pos a.au.playing {
-    background: url(image/hdpi/definition-audio-loading.gif) center no-repeat;
-    -webkit-background-size: contain;
-    background-size: contain;
-
-  }
-
-  .pos a.photo {
-    background: url(image/hdpi/definition-icon-photo.png) center no-repeat;
-    -webkit-background-size: contain;
-    background-size: contain;
-
-  }
-
-  /* art link */
-  .pos a.art-link {
-    background: url(image/hdpi/definition-icon-photo.png) center no-repeat;
-    -webkit-background-size: contain;
-    background-size: contain;
-
-  }
-
-  /* POS Separators */
-  .posno {
-    background: url(image/hdpi/definition-page-separator-flat.png) top left repeat-x;
-    -webkit-background-size: 320px 48px;
-  }
-  .pos-tab {
-    background: url(image/hdpi/definition-page-tag-flat.png) bottom center no-repeat;
-    -webkit-background-size: 50px 25px;
-    background-position-y: 22px;  /* controls tab background vert alignment */
-  }
-
-  /* Favorites */
-  .pos a.favorite {
-    background: url(image/hdpi/definition-favorite-star-off.png) center no-repeat;
-    -webkit-background-size: contain;
-    background-size: contain;
-  }
-  .pos a.favorite.starred {
-    background: url(image/hdpi/definition-favorite-star-on.png) center no-repeat;
-    -webkit-background-size: contain;
-    background-size: contain;
-  }
-
-  /* Scrabble Tiles */
-  .tile {
-    background: url(image/hdpi/definition-tile.png) center no-repeat;
-    -webkit-background-size: contain;
-    background-size: contain;
-  }
-}
-
-@media screen and (-webkit-min-device-pixel-ratio: 2.0) {
-
-  .pos a.au {
-    background: url(image/xhdpi/definition-icon-audio.png) center no-repeat;
-    -webkit-background-size: contain;
-    background-size: contain;
-  }
-  .pos a.au.playing {
-    background: url(image/xhdpi/definition-audio-loading.gif) center no-repeat;
-    -webkit-background-size: contain;
-    background-size: contain;
-  }
-
-  .pos a.photo {
-    background: url(image/xhdpi/definition-icon-photo.png) center no-repeat;
-    -webkit-background-size: contain;
-    background-size: contain;
-  }
-
-
-  /* POS Separators */
-  .posno {
-    background: url(image/xhdpi/definition-page-separator-flat.png) top left repeat-x;
-    -webkit-background-size: 320px 48px;
-  }
-  .pos-tab {
-    background: url(image/xhdpi/definition-page-tag-flat.png) bottom center no-repeat;
-    -webkit-background-size: 50px 25px;
-    background-position-y: 22px;  /* controls tab background vert alignment */
-  }
-
-  /* Favorites */
-  .pos a.favorite {
-    background: url(image/xhdpi/definition-favorite-star-off.png) center no-repeat;
-    -webkit-background-size: contain;
-    background-size: contain;
-  }
-  .pos a.favorite.starred {
-    background: url(image/xhdpi/definition-favorite-star-on.png) center no-repeat;
-    -webkit-background-size: contain;
-    background-size: contain;
-  }
-
-  /* Scrabble Tiles */
-  .tile {
-    background: url(image/xhdpi/definition-tile.png) center no-repeat;
-    -webkit-background-size: contain;
-    background-size: contain;
-  }
-
-  /* art link */
-  .pos a.art-link {
-    background: url(image/xhdpi/definition-icon-photo.png) center no-repeat;
-    -webkit-background-size: contain;
-    background-size: contain;
-  }
-}
-
-@media screen and (-webkit-min-device-pixel-ratio: 3.0) {
-
-  .pos a.au {
-    background: url(image/xxhdpi/definition-icon-audio.png) center no-repeat;
-    -webkit-background-size: contain;
-    background-size: contain;
-  }
-  .pos a.au.playing {
-    background: url(image/xxhdpi/definition-audio-loading.gif) center no-repeat;
-    -webkit-background-size: contain;
-    background-size: contain;
-  }
-
-  .pos a.photo {
-    background: url(image/xxhdpi/definition-icon-photo.png) center no-repeat;
-    -webkit-background-size: contain;
-    background-size: contain;
-  }
-
-
-  /* Favorites */
-  .pos a.favorite {
-    background: url(image/xxhdpi/definition-favorite-star-off.png) center no-repeat;
-    -webkit-background-size: contain;
-    background-size: contain;
-  }
-  .pos a.favorite.starred {
-    background: url(image/xxhdpi/definition-favorite-star-on.png) center no-repeat;
-    -webkit-background-size: contain;
-    background-size: contain;
-  }
-
-  /* art link */
-  .pos a.art-link {
-    background: url(image/xxhdpi/definition-icon-photo.png) center no-repeat;
-    -webkit-background-size: contain;
-    background-size: contain;
-  }
 }
