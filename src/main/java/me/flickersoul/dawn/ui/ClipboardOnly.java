@@ -24,6 +24,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.*;
 import java.io.IOException;
+import java.net.BindException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.UnknownHostException;
 
 import static java.lang.Thread.sleep;
 
@@ -54,6 +58,18 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
     private IOSButton isReadingFromKindle;
 
     public static void main(String[] args){
+        try{
+            ServerSocket socket = new ServerSocket(9999, 10, InetAddress.getByAddress(new byte[] {127, 0, 0, 1}));
+        }catch (BindException e){
+            e.printStackTrace();
+            System.exit(7);
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            System.exit(7);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(7);
+        }
         Application.launch(args);
     }
 
@@ -104,9 +120,10 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
         isFocused.addListener(observable -> {
             if(!clipboardStage.isFocused())
                 Platform.runLater(() -> {
-                    clipboardStage.setAlwaysOnTop(true);
-                    clipboardStage.setAlwaysOnTop(false);
-                    clipboardStage.requestFocus();
+                    if(!clipboardStage.isAlwaysOnTop()) {
+                        clipboardStage.setAlwaysOnTop(true);
+                        clipboardStage.setAlwaysOnTop(false);
+                    }
                 });
         });
 
@@ -231,7 +248,6 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
             if(isMultiCopyingAllowed || !tempWord.equals(lastWord)) {
 
                 if (ClipboardFunctionQuery.lookupWord(tempWord)) {
-                    ClipboardSearchBar.setText(tempWord);
                     HistoryArray.putSearchResult(tempWord);
                     System.out.println("Got Word");
                     isIconified.setValue(false);

@@ -9,6 +9,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import me.flickersoul.dawn.functions.ClipboardFunctionQuery;
+import me.flickersoul.dawn.functions.HistoryArray;
 import me.flickersoul.dawn.functions.JSLookup;
 import netscape.javascript.JSObject;
 
@@ -39,7 +40,10 @@ public class Thesaurus extends Tab {
                 if(selection.toCharArray().length == 0){
                     contextMenu.show(webView, event.getScreenX(), event.getScreenY());
                 }else{
-                    ClipboardFunctionQuery.lookupWord(selection);
+                    if(ClipboardFunctionQuery.lookupWord(selection))
+                        HistoryArray.insertSearchResult(selection);
+                    else
+                        HistoryArray.setEmptyFlagTrue();
                 }
             }else {
                 contextMenu.hide();

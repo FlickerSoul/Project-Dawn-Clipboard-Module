@@ -9,7 +9,6 @@ public class ClipboardPane extends TabPane {
     ChDefRegion chDefRegion;
     Thesaurus thesaurus;
 
-
     SingleSelectionModel<Tab> selectionModel;
 
     public ClipboardPane(){

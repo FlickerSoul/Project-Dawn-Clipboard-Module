@@ -13,7 +13,6 @@ public class JSPlay {
     private static ExecutorService singleThreadPool = Executors.newSingleThreadExecutor((runnable) -> new Thread(runnable, "Audio Playing Thread"));
 
     public void lookupWord(String word){
-        ClipboardSearchBar.setText(word);
         if(ClipboardFunctionQuery.lookupWord(word)){
             HistoryArray.insertSearchResult(word);
         }

@@ -12,6 +12,10 @@ public class HistoryArray {
         emptyFlag = true;
     }
 
+    /**
+     * Put a word in the head of the array
+     * @param word
+     */
     public static void putSearchResult(String word){
         if (++head == 30) {
             head = 0;
@@ -29,6 +33,10 @@ public class HistoryArray {
         }
     }
 
+    /**
+     * Insert a word in the mid of the array
+     * @param word
+     */
     public static void insertSearchResult(String word){
         if(pointer == head || pointer == tail){
             putSearchResult(word);
@@ -66,6 +74,9 @@ public class HistoryArray {
         }
     }
 
+    /**
+     * Get previous searched word
+     */
     public static void getPreviousWord(){
         if(emptyFlag){
             ClipboardFunctionQuery.lookupWord(historyArray[pointer]);
@@ -90,6 +101,9 @@ public class HistoryArray {
         ClipboardFunctionQuery.lookupWord(historyArray[pointer]);
     }
 
+    /**
+     * get latter searched word
+     */
     public static void getLatterWord(){
         if(pointer == head){
             if(historyArray[pointer] != null)

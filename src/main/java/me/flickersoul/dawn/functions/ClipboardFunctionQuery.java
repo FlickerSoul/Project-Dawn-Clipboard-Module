@@ -1,6 +1,7 @@
 package me.flickersoul.dawn.functions;
 
 import javafx.application.Platform;
+import me.flickersoul.dawn.ui.ClipboardSearchBar;
 import me.flickersoul.dawn.ui.EnDefRegion;
 import me.flickersoul.dawn.ui.Thesaurus;
 import org.jsoup.Jsoup;
@@ -94,6 +95,8 @@ public class ClipboardFunctionQuery {
 
     public static boolean lookupWord(String word){
         long ST = System.currentTimeMillis();
+
+        ClipboardSearchBar.setText(word);
 
         try {
             String firstLetter;

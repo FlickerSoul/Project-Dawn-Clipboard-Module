@@ -5,6 +5,7 @@ import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.scene.Cursor;
 import javafx.scene.Parent;
 import javafx.scene.control.Tooltip;
 import javafx.scene.paint.Color;
@@ -51,6 +52,8 @@ public class IOSButton extends Parent {
         this.setOnMouseClicked(e -> {
             switchOn.set(!switchOn.get());
         });
+
+        this.setCursor(Cursor.HAND);
 
         Tooltip.install(this, new Tooltip(toolHit));
         switchOn.setValue(initState);

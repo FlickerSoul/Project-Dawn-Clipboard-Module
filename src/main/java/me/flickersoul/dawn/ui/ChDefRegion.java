@@ -8,6 +8,7 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.scene.control.*;
 import me.flickersoul.dawn.functions.ClipboardFunctionQuery;
+import me.flickersoul.dawn.functions.HistoryArray;
 import me.flickersoul.dawn.functions.JSPlay;
 import netscape.javascript.JSObject;
 
@@ -36,7 +37,10 @@ public class ChDefRegion extends Tab {
                 if(selection.toCharArray().length == 0){
                     contextMenu.show(webView, event.getScreenX(), event.getScreenY());
                 }else{
-                    ClipboardFunctionQuery.lookupWord(selection);
+                    if(ClipboardFunctionQuery.lookupWord(selection))
+                        HistoryArray.insertSearchResult(selection);
+                    else
+                        HistoryArray.setEmptyFlagTrue();
                 }
             }else {
                 contextMenu.hide();
