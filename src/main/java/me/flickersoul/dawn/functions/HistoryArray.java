@@ -1,5 +1,8 @@
 package me.flickersoul.dawn.functions;
 
+import me.flickersoul.dawn.ui.ClipboardPane;
+import me.flickersoul.dawn.ui.SearchEngineRegion;
+
 public class HistoryArray {
     private static String[] historyArray = new String[30];
 
@@ -7,11 +10,20 @@ public class HistoryArray {
     private static int tail = 0;
     private static int pointer = 0;
     private static boolean emptyFlag = false;
+    private static String currentWord;
 
     public static void setEmptyFlagTrue(){
         emptyFlag = true;
     }
 
+    public static void setCurrentWord(String word){
+        currentWord = word;
+    }
+
+    public static void lookCurrentWordInGoogle(){
+        SearchEngineRegion.setSearchContent(currentWord);
+        ClipboardPane.setTabSignValue(ClipboardPane.SC_TAB_NUM);
+    }
     /**
      * Put a word in the head of the array
      * @param word
@@ -79,7 +91,9 @@ public class HistoryArray {
      */
     public static void getPreviousWord(){
         if(emptyFlag){
+            setCurrentWord(historyArray[pointer]);
             ClipboardFunctionQuery.lookupWord(historyArray[pointer]);
+            emptyFlag = false;
             return;
         }
 
@@ -98,6 +112,7 @@ public class HistoryArray {
             return;
         }
 
+        setCurrentWord(historyArray[pointer]);
         ClipboardFunctionQuery.lookupWord(historyArray[pointer]);
     }
 
@@ -116,6 +131,7 @@ public class HistoryArray {
             pointer = 0;
         }
 
+        setCurrentWord(historyArray[pointer]);
         ClipboardFunctionQuery.lookupWord(historyArray[pointer]);
     }
 }

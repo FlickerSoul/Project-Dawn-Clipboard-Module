@@ -2,7 +2,6 @@ package me.flickersoul.dawn.functions;
 
 import javafx.scene.media.AudioClip;
 import javafx.scene.media.MediaException;
-import me.flickersoul.dawn.ui.ClipboardSearchBar;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

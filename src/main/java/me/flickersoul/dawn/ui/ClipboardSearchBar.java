@@ -12,7 +12,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import me.flickersoul.dawn.functions.HistoryArray;
 
-
 public class ClipboardSearchBar extends HBox {
     private TextField searchBox;
     private Button searchButton;

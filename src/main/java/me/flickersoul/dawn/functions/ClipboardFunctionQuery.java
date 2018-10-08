@@ -54,26 +54,26 @@ public class ClipboardFunctionQuery {
             "       }\n" +
             "   </script>\n" +
             "</body>\n" +
-            "</html>";;
+            "</html>";
 
     private static final String EMPTY_TEMPLATE = "<div style=\"text-align: center;\" style=\"margin-top: 10px;\"> <h3> NOT FOUND </h3> <div>";
 
     private static final String SVG_HTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" t=\"1536995979877\" class=\"icon\" style=\"\" viewBox=\"0 0 1109 1024\" version=\"1.1\" p-id=\"1888\" width=\"26\" height=\"26\"><path " + "d=\"M35.754667 338.176v348.501333h233.6l292.138666 290.346667V47.701333L269.354667 338.176H35.754667z m788.650666 174.208c0-104.533333-58.453333-191.701333-146.090666-232.362667v464.64c87.637333-40.618667 146.090667-127.658667 146.090666-232.277333zM678.314667 1.28v121.984c169.472 52.309333 292.138667 203.264 292.138666 389.162667 0 185.856-122.666667 336.896-292.138666 389.12v122.026666c233.685333-52.352 409.002667-261.418667 409.002666-511.146666 0-249.728-175.317333-458.837333-409.002666-511.146667z\" fill=\"#000000\"/></svg>";
 
-    static Connection connection;
+    private static Connection connection;
 
     //定义查找的SQL
-    static final String GET_ID_SQL_PART1 = "SELECT id FROM ";//做个测试，是大数据库查找快还是小数据库查找快
-    static final String GET_ID_SQL_PART2 = " WHERE value = ?;";
-    static final String GET_ID_SQL_PART3 = "SELECT id FROM ";
-    static final String GET_ID_SQL_PART4 = " WHERE index_id = ?";
+    private static final String GET_ID_SQL_PART1 = "SELECT id FROM ";//做个测试，是大数据库查找快还是小数据库查找快
+    private static final String GET_ID_SQL_PART2 = " WHERE value = ?;";
+    private static final String GET_ID_SQL_PART3 = "SELECT id FROM ";
+    private static final String GET_ID_SQL_PART4 = " WHERE index_id = ?";
 //    static final String GET_ID_TEST = "SELECT c0_id FROM all_words_content WHERE c1word_value = ?";
-    static final String GET_DEF_SQL =  "SELECT contents FROM definitions WHERE id = ?";
+    private static final String GET_DEF_SQL =  "SELECT contents FROM definitions WHERE id = ?";
     //定义发音筛选正则表达
-    static final Pattern NUM_PATTERN = Pattern.compile("^[0-9]+");
-    static final Pattern processWordPattern = Pattern.compile("[^'a-zA-Z0-9-\\s]");
-    static final Pattern FIRST_LETTER_PATTERN = Pattern.compile("[a-z]");
-    static Boolean isAutoPlaying = true;
+    private static final Pattern NUM_PATTERN = Pattern.compile("^[0-9]+");
+    private static final Pattern PROCESS_WORD_PATTERN = Pattern.compile("[^'a-zA-Z0-9ā--\\s]");
+    private static final Pattern FIRST_LETTER_PATTERN = Pattern.compile("[a-z]");
+    private static Boolean isAutoPlaying = true;
 
     private static ExecutorService singThreadPool_API = Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, "KingSoft API Searching Thread"));
     private static ExecutorService multiThreadsPool_Audio = Executors.newFixedThreadPool(5, runnable -> new Thread(runnable, "Audio Caching Thread_Copy Thread"));
@@ -100,8 +100,9 @@ public class ClipboardFunctionQuery {
 
         try {
             String firstLetter;
-            singThreadPool_API.execute(kingSoftAPIQuery.setWord(word));
             word = ClipboardFunctionQuery.processWords(word);
+            HistoryArray.setCurrentWord(word);
+            singThreadPool_API.execute(kingSoftAPIQuery.setWord(word));
             firstLetter = word.toLowerCase().charAt(0) + "";
             firstLetter = FIRST_LETTER_PATTERN.matcher(firstLetter).find() ? firstLetter : "spec_char";
             PreparedStatement getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART1 + firstLetter + GET_ID_SQL_PART2); //最快
@@ -280,7 +281,7 @@ public class ClipboardFunctionQuery {
     }
 
     public static String processWords(String word){
-        return processWordPattern.matcher(word).replaceAll("").trim();
+        return PROCESS_WORD_PATTERN.matcher(word).replaceAll("").trim();
     }
 
     public static void setAutoPlaying(Boolean isAutoPlaying){

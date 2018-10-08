@@ -34,7 +34,6 @@ public class IOSButton extends Parent {
         dot.setCenterX(wid_size/4);
         dot.setCenterY(wid_size/4+0.5);
         dot.setFill(Color.WHITE);
-//        dot.setStroke(Color.BLACK);
 
         translateTransition.setNode(dot);
         fillTransition.setShape(base);
@@ -49,9 +48,7 @@ public class IOSButton extends Parent {
             parallelTransition.play();
         });
 
-        this.setOnMouseClicked(e -> {
-            switchOn.set(!switchOn.get());
-        });
+        this.setOnMouseClicked(e -> switchOn.set(!switchOn.get()));
 
         this.setCursor(Cursor.HAND);
 

@@ -24,10 +24,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.*;
 import java.io.IOException;
-import java.net.BindException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.UnknownHostException;
+import java.net.*;
 
 import static java.lang.Thread.sleep;
 
@@ -39,7 +36,8 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
     private final KeyCombination latterWordCom = new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN);
     private final KeyCombination enTab = new KeyCodeCombination(KeyCode.E, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
     private final KeyCombination chTab = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
-    private final KeyCombination thTab = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
+    private final KeyCombination thTab = new KeyCodeCombination(KeyCode.T, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
+    private final KeyCombination scTab = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
     private final KeyCombination playAudio = new KeyCodeCombination(KeyCode.P, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
     private final Clipboard sysClip = Toolkit.getDefaultToolkit().getSystemClipboard();
 
@@ -59,7 +57,7 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
 
     public static void main(String[] args){
         try{
-            ServerSocket socket = new ServerSocket(9999, 10, InetAddress.getByAddress(new byte[] {127, 0, 0, 1}));
+            ServerSocket socket = new ServerSocket(7590, 10, InetAddress.getByAddress(new byte[] {127, 0, 0, 1}));
         }catch (BindException e){
             e.printStackTrace();
             System.exit(7);
@@ -70,7 +68,16 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
             e.printStackTrace();
             System.exit(7);
         }
+
+        System.setProperty("https.proxyHost", "127.0.0.1");
+        System.setProperty("https.proxyPort", "1080");
+
+        System.setProperty("http.proxyHost", "127.0.0.1");
+        System.setProperty("http.proxyPort", "1080");
+
         Application.launch(args);
+
+        System.out.println("Application Exited");
     }
 
     @Override
@@ -117,14 +124,17 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
             }
         });
 
-        isFocused.addListener(observable -> {
-            if(!clipboardStage.isFocused())
+        isFocused.addListener((observable, oldValue, newValue) -> {
+            if(newValue) {
                 Platform.runLater(() -> {
-                    if(!clipboardStage.isAlwaysOnTop()) {
+                    if (!clipboardStage.isAlwaysOnTop()) {
                         clipboardStage.setAlwaysOnTop(true);
                         clipboardStage.setAlwaysOnTop(false);
                     }
                 });
+            }else{
+                isIconified.setValue(true);
+            }
         });
 
         isListening.addListener((ob, oldV, newV) -> {
@@ -136,22 +146,26 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
                 System.out.println("Postponed Listening...");
         });
 
+        clipboardStage.iconifiedProperty().addListener((observable, oldValue, newValue) -> {
+            isIconified.setValue(newValue);
+        });
+
         clipboardStage.focusedProperty().addListener((observable, oldValue, newValue) -> {
             if(newValue){
                 clipboardSearchBar.requestSearchBoxFocused();
+            }else {
+                isFocused.setValue(false);
             }
         });
 
         Provider provider = Provider.getCurrentProvider(false);
         provider.register(KeyStroke.getKeyStroke("ctrl alt shift O"), hotKey -> {
             if(clipboardStage.isIconified()) {
-                isIconified.setValue(true);
                 isIconified.setValue(false);
             }
             else if(!clipboardStage.isFocused())
                 Platform.runLater(() -> clipboardStage.requestFocus());
             else {
-                isIconified.setValue(false);
                 isIconified.setValue(true);
             }
         });
@@ -164,7 +178,6 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
 
         scene.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if(event.getCode() == KeyCode.ESCAPE){
-                isIconified.setValue(false);
                 isIconified.setValue(true);
             }
         });
@@ -177,11 +190,13 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
             }else if(latterWordCom.match(event)){
                 HistoryArray.getLatterWord();
             }else if(enTab.match(event)){
-                clipboardPane.focusOnEn();
+                ClipboardPane.setTabSignValue(ClipboardPane.EN_TAB_NUM);
             }else if(chTab.match(event)){
-                clipboardPane.focusOnCh();
+                ClipboardPane.setTabSignValue(ClipboardPane.CH_TAB_NUM);
             }else if(thTab.match(event)){
-                clipboardPane.focusOnTh();
+                ClipboardPane.setTabSignValue(ClipboardPane.TH_TAB_NUM);
+            }else if(scTab.match(event)){
+                HistoryArray.lookCurrentWordInGoogle();
             }
         });
 
