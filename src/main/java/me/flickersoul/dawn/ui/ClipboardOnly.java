@@ -1,36 +1,49 @@
 package me.flickersoul.dawn.ui;
 
 import com.tulskiy.keymaster.common.Provider;
-import javafx.beans.property.BooleanProperty;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.geometry.Insets;
+import javafx.geometry.NodeOrientation;
 import javafx.geometry.Orientation;
+import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ToolBar;
 import javafx.scene.image.Image;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.input.*;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 import me.flickersoul.dawn.functions.ClipboardFunctionQuery;
 import me.flickersoul.dawn.functions.HistoryArray;
 import me.flickersoul.dawn.functions.JSPlay;
+import me.flickersoul.dawn.functions.UIProperty;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.*;
+import java.awt.datatransfer.Clipboard;
 import java.io.IOException;
-import java.net.*;
+import java.net.BindException;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.UnknownHostException;
 
 import static java.lang.Thread.sleep;
 
 public class ClipboardOnly extends Application implements ClipboardOwner {
-    private static SimpleBooleanProperty isIconified = new SimpleBooleanProperty(false);
-    private static SimpleBooleanProperty isFocused = new SimpleBooleanProperty(true);
+    private static UIProperty isIconified = new UIProperty(false);
+    private static UIProperty isFocused = new UIProperty(true);
     private static BooleanProperty isListening = new SimpleBooleanProperty(true);
     private final KeyCombination previousWordCom = new KeyCodeCombination(KeyCode.LEFT, KeyCombination.ALT_DOWN);
     private final KeyCombination latterWordCom = new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN);
@@ -41,19 +54,29 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
     private final KeyCombination playAudio = new KeyCodeCombination(KeyCode.P, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
     private final Clipboard sysClip = Toolkit.getDefaultToolkit().getSystemClipboard();
 
+    SimpleDoubleProperty clickStartPointSX = new SimpleDoubleProperty();
+    SimpleDoubleProperty clickStartPointSY = new SimpleDoubleProperty();
+    SimpleDoubleProperty windowStartPointX = new SimpleDoubleProperty();
+    SimpleDoubleProperty windowStartPointY = new SimpleDoubleProperty();
+
     private String lastWord = "";
     private String tempWord;
     private boolean isImportedFromKindle = false;
     private boolean isMultiCopyingAllowed = true;
+    private boolean isFirstSwitched = false;
 
     private ToolBar topToolBar;
     private ClipboardSearchBar clipboardSearchBar;
     private BorderPane borderPane;
+    private BorderPane outerBorderPane;
     private ClipboardPane clipboardPane;
     private IOSButton isAlwaysOn;
     private IOSButton isListenerOn;
     private IOSButton isAutoPlaying;
     private IOSButton isReadingFromKindle;
+    private HBox menuBar;
+
+    private static Provider provider;
 
     public static void main(String[] args){
         try{
@@ -77,6 +100,10 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
 
         Application.launch(args);
 
+        provider.stop();
+        JSPlay.terminatePool();
+        ClipboardFunctionQuery.terminatePool();
+
         System.out.println("Application Exited");
     }
 
@@ -86,10 +113,19 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
     }
 
     private void initClipboardPane(Stage clipboardStage){
+        clipboardStage.initStyle(StageStyle.UNDECORATED);
+        clipboardStage.setTitle("Dawn: Clipboard Listener");
+        clipboardStage.getIcons().add(new Image(this.getClass().getClassLoader().getResource("icon/ico3.png").toExternalForm()));
+
+        Button minButton = new Button("Iconify");
+        Button hideButton = new Button("Close");
+
         topToolBar = new ToolBar();
         clipboardSearchBar = new ClipboardSearchBar();
         borderPane = new BorderPane();
+        outerBorderPane = new BorderPane();
         clipboardPane = new ClipboardPane();
+        menuBar = new HBox();
         isAlwaysOn = new IOSButton(30, false, "Whether Always On Top");
         isListenerOn = new IOSButton(30, true, "Whether Listen To Clipboard");
         isAutoPlaying = new IOSButton(30, true, "Whether Auto Play Audio");
@@ -99,46 +135,57 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
         isListenerOn.getSwitchOn().addListener((observable, oldValue, newValue) -> {
             if(newValue)
                 isListening.setValue(true);
-            else
+            else{
                 isListening.setValue(false);
-            isFocused.setValue(!isFocused.getValue());
+                isFirstSwitched = true;
+            }
         });
         isAutoPlaying.getSwitchOn().addListener((observable, oldValue, newValue) -> ClipboardFunctionQuery.setAutoPlaying(newValue));
         isReadingFromKindle.getSwitchOn().addListener(((observable, oldValue, newValue) -> isImportedFromKindle = newValue));
+
+        minButton.setCursor(Cursor.HAND);
+        minButton.setOnMouseClicked(event -> {
+            this.hideWindow();
+            System.out.println("min through button");
+        });
+        minButton.addEventHandler(MouseEvent.MOUSE_DRAGGED, event -> event.consume());
+
+        hideButton.setCursor(Cursor.HAND);
+        hideButton.setOnMouseClicked(event -> {
+            clipboardStage.hide();
+        });
+        hideButton.addEventHandler(MouseEvent.MOUSE_DRAGGED, event -> event.consume());
+
+        menuBar.setBackground(new Background(new BackgroundFill(Color.WHITE, null, null)));
+        menuBar.getChildren().addAll(minButton, new Text(clipboardStage.getTitle()), hideButton);
+        menuBar.setSpacing(5d);
+        menuBar.setMaxHeight(30d);
+        menuBar.setAlignment(Pos.CENTER);
+        menuBar.setNodeOrientation(NodeOrientation.RIGHT_TO_LEFT);
+
+        menuBar.setOnMousePressed(event -> {
+            clickStartPointSX.set(event.getScreenX());
+            clickStartPointSY.set(event.getScreenY());
+            windowStartPointX.set(clipboardStage.getX());
+            windowStartPointY.set(clipboardStage.getY());
+        });
+        menuBar.addEventHandler(MouseEvent.MOUSE_DRAGGED, event -> {
+            clipboardStage.setX(windowStartPointX.getValue()  + event.getScreenX() - clickStartPointSX.get());
+            clipboardStage.setY(windowStartPointY.getValue()  + event.getScreenY() - clickStartPointSY.get());
+        });
 
         topToolBar.setOrientation(Orientation.HORIZONTAL);
         topToolBar.setPadding(new Insets(5, 5, 5, 5));
         topToolBar.getItems().addAll(isAlwaysOn, isListenerOn, isAutoPlaying, isReadingFromKindle, clipboardSearchBar);
 
-        Scene scene = new Scene(borderPane, 370, 460);
+        Scene scene = new Scene(outerBorderPane, 370, 490);
         borderPane.setCenter(clipboardPane);
         borderPane.setTop(topToolBar);
+        outerBorderPane.setTop(menuBar);
+        outerBorderPane.setCenter(borderPane);
 
-        isIconified.addListener((observable, oldValue, newValue) -> {
-            Platform.runLater(() -> clipboardStage.setIconified(newValue));
-            if(newValue){
-                System.out.println("min");
-            }else {
-                System.out.println("focus");
-                Platform.runLater(() -> clipboardStage.requestFocus());
-            }
-        });
-
-        isFocused.addListener((observable, oldValue, newValue) -> {
+        isListening.addListener((observableValue, oldValue, newValue) -> {
             if(newValue) {
-                Platform.runLater(() -> {
-                    if (!clipboardStage.isAlwaysOnTop()) {
-                        clipboardStage.setAlwaysOnTop(true);
-                        clipboardStage.setAlwaysOnTop(false);
-                    }
-                });
-            }else{
-                isIconified.setValue(true);
-            }
-        });
-
-        isListening.addListener((ob, oldV, newV) -> {
-            if(newV) {
                 this.regainOwnership(sysClip.getContents(this));
                 System.out.println("Start Listening");
             }
@@ -146,39 +193,46 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
                 System.out.println("Postponed Listening...");
         });
 
-        clipboardStage.iconifiedProperty().addListener((observable, oldValue, newValue) -> {
-            isIconified.setValue(newValue);
-        });
-
-        clipboardStage.focusedProperty().addListener((observable, oldValue, newValue) -> {
-            if(newValue){
-                clipboardSearchBar.requestSearchBoxFocused();
-            }else {
-                isFocused.setValue(false);
+        clipboardStage.iconifiedProperty().addListener((observable, oldValue, newValue) -> isIconified.setValue(newValue));
+        isIconified.addListener((observable, oldValue, newValue) -> {
+            if(isIconified.isNotCallFromBonding()){
+                Platform.runLater(() -> clipboardStage.setIconified(newValue));
+                if(newValue){
+                    System.out.println("minimize window");
+                }else {
+                    System.out.println("maximize window");
+                }
             }
         });
 
-        Provider provider = Provider.getCurrentProvider(false);
-        provider.register(KeyStroke.getKeyStroke("ctrl alt shift O"), hotKey -> {
+        clipboardStage.focusedProperty().addListener((observable, oldValue, newValue) -> isFocused.setValue(newValue));
+        isFocused.addListener((observable, oldValue, newValue) -> {
+            if(isFocused.isNotCallFromBonding()){
+                Platform.runLater(() -> {
+                    clipboardStage.setIconified(true);
+                    clipboardStage.setIconified(false);
+                });
+                System.out.println("focus window");
+            }
+        });
+
+
+        provider = Provider.getCurrentProvider(false);
+        provider.register(KeyStroke.getKeyStroke("ctrl alt shift O"), hotKey -> { //Cap letter
             if(clipboardStage.isIconified()) {
-                isIconified.setValue(false);
+                this.maximizeWindow();
             }
-            else if(!clipboardStage.isFocused())
-                Platform.runLater(() -> clipboardStage.requestFocus());
-            else {
-                isIconified.setValue(true);
+            else if(!clipboardStage.isFocused()){
+                this.focusWindow();
+            }else {
+                this.hideWindow();
             }
-        });
-
-        clipboardStage.setOnCloseRequest(e -> {
-            provider.stop();
-            JSPlay.terminatePool();
-            ClipboardFunctionQuery.terminatePool();
         });
 
         scene.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
             if(event.getCode() == KeyCode.ESCAPE){
-                isIconified.setValue(true);
+                this.hideWindow();
+                System.out.println("esc");
             }
         });
 
@@ -206,10 +260,10 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
 
         clipboardSearchBar.requestSearchBoxFocused();
 
-        clipboardStage.setTitle("Dawn: Clipboard Listener");
-        clipboardStage.getIcons().add(new Image(this.getClass().getClassLoader().getResource("icon/ico3.png").toExternalForm()));
         clipboardStage.setScene(scene);
         clipboardStage.show();
+
+        this.callUI();
         //sense set
     }
 
@@ -251,7 +305,6 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
                 e.printStackTrace();
             }
 
-
             tempWord = object.toString();
 
             if(isImportedFromKindle){
@@ -265,8 +318,7 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
                 if (ClipboardFunctionQuery.lookupWord(tempWord)) {
                     HistoryArray.putSearchResult(tempWord);
                     System.out.println("Got Word");
-                    isIconified.setValue(false);
-                    isFocused.setValue(!isFocused.getValue());
+                    this.callUI();
                 }else{
                     HistoryArray.setEmptyFlagTrue();
                 }
@@ -279,5 +331,26 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
     private void regainOwnership(Transferable t) {
         sysClip.setContents(t, this);
         processContents(t);
+    }
+
+    private void callUI(){
+        if(isIconified.getValue()){
+            this.maximizeWindow();
+            this.focusWindow();
+        }else{
+            this.focusWindow();
+        }
+    }
+
+    private void hideWindow(){
+        isIconified.setValue(true, true);
+    }
+
+    private void maximizeWindow(){
+        isIconified.setValue(false, true);
+    }
+
+    private void focusWindow(){
+        isFocused.setValue(true, true);
     }
 }

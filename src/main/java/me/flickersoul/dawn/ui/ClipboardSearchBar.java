@@ -1,6 +1,7 @@
 package me.flickersoul.dawn.ui;
 
 import javafx.beans.property.SimpleStringProperty;
+import javafx.scene.Cursor;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -40,6 +41,7 @@ public class ClipboardSearchBar extends HBox {
 
         searchButton = new Button("Search");
         searchButton.setId("search-button");
+        searchButton.setCursor(Cursor.HAND);
         searchButton.setTooltip(new Tooltip("Search Words"));
         searchButton.addEventFilter(MouseEvent.MOUSE_CLICKED, e -> {
             first = searchBox.getText();

@@ -16,6 +16,10 @@ public class HistoryArray {
         emptyFlag = true;
     }
 
+    public static void setEmptyFlagFalse(){
+        emptyFlag = false;
+    }
+
     public static void setCurrentWord(String word){
         currentWord = word;
     }
@@ -24,6 +28,7 @@ public class HistoryArray {
         SearchEngineRegion.setSearchContent(currentWord);
         ClipboardPane.setTabSignValue(ClipboardPane.SC_TAB_NUM);
     }
+
     /**
      * Put a word in the head of the array
      * @param word
@@ -43,6 +48,8 @@ public class HistoryArray {
             tail = head + 1;
             historyArray[head] = word;
         }
+        setCurrentWord(word);
+        HistoryArray.setEmptyFlagFalse();
     }
 
     /**
@@ -84,6 +91,8 @@ public class HistoryArray {
                 historyArray[++pointer] = word;
             }
         }
+        setCurrentWord(word);
+        HistoryArray.setEmptyFlagFalse();
     }
 
     /**
@@ -93,7 +102,7 @@ public class HistoryArray {
         if(emptyFlag){
             setCurrentWord(historyArray[pointer]);
             ClipboardFunctionQuery.lookupWord(historyArray[pointer]);
-            emptyFlag = false;
+            HistoryArray.setEmptyFlagFalse();
             return;
         }
 

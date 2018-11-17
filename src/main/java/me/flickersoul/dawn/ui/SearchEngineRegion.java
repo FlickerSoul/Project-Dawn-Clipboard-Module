@@ -19,6 +19,7 @@ public class SearchEngineRegion extends Tab {
 
         content.addListener((observable, oldValue, newValue) -> {
             webEngine.load("https://www.google.com/search?q=" + newValue);
+            System.gc();
         });
 
         this.setClosable(false);
