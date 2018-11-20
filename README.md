@@ -1,6 +1,8 @@
 # Project-Dawn-Clipboard-Module
 ## 禁止作为商用
 
+项目转移至个人GitLab，不定期更新
+
 Project Dawn 剪贴板查词模块
 
 ## Features
@@ -20,7 +22,4 @@ Project Dawn 剪贴板查词模块
 
 ## 截图
 
-![UI1](http://p9wgwhtmi.bkt.clouddn.com/test1.png)
-![UI2](http://p9wgwhtmi.bkt.clouddn.com/test2.png)
-![UI3](http://p9wgwhtmi.bkt.clouddn.com/test3.png)
-![UI4](http://p9wgwhtmi.bkt.clouddn.com/test4.gif)
+null
