@@ -1,35 +1,36 @@
 package me.flickersoul.dawn.ui;
 
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.control.SingleSelectionModel;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import me.flickersoul.dawn.functions.WrapedIntBoolProperty;
 
 public class ClipboardPane extends TabPane {
     private EnDefRegion enDefRegion;
     private ChDefRegion chDefRegion;
     private Thesaurus thesaurus;
-    private SearchEngineRegion searchEngineRegion;
 
-    private SingleSelectionModel<Tab> selectionModel;
+    private static SingleSelectionModel<Tab> selectionModel;
 
-    private static SimpleIntegerProperty tabSign = new SimpleIntegerProperty(0); // 0->en 1->ch 2->th 3->search
+    private static WrapedIntBoolProperty tabSign = new WrapedIntBoolProperty(); // 0->en 1->ch 2->th 3->search
 
     public static final int EN_TAB_NUM = 0;
     public static final int CH_TAB_NUM = 1;
     public static final int TH_TAB_NUM = 2;
-    public static final int SC_TAB_NUM = 3;
 
     public ClipboardPane(){
         enDefRegion = new EnDefRegion();
         chDefRegion = new ChDefRegion();
         thesaurus = new Thesaurus();
-        searchEngineRegion = new SearchEngineRegion();
+
+        enDefRegion.setOnSelectionChanged(event -> System.gc());
+
+        chDefRegion.setOnSelectionChanged(event -> System.gc());
 
         selectionModel = this.getSelectionModel();
 
         tabSign.addListener((observable, oldValue, newValue) -> {
-            switch (newValue.intValue()){
+            switch (tabSign.getChangedTabNum()){
                 case 0:
                     this.focusOnEn();
                     break;
@@ -39,17 +40,16 @@ public class ClipboardPane extends TabPane {
                 case 2:
                     this.focusOnTh();
                     break;
-                case 3:
-                    this.focusOnSc();
-                    break;
             }
         });
 
-        this.getTabs().addAll(enDefRegion, chDefRegion, thesaurus, searchEngineRegion);
+        this.getTabs().addAll(enDefRegion, chDefRegion, thesaurus);
     }
 
     public static void setTabSignValue(int tabNum){
-        tabSign.setValue(tabNum);
+        if (!ClipboardPane.selectionModel.isSelected(tabNum)){
+            tabSign.changeTabNum(tabNum);
+        }
     }
 
     private void focusOnCh(){
@@ -62,9 +62,5 @@ public class ClipboardPane extends TabPane {
 
     private void focusOnTh(){
         selectionModel.select(thesaurus);
-    }
-
-    private void focusOnSc(){
-        selectionModel.select(searchEngineRegion);
     }
 }

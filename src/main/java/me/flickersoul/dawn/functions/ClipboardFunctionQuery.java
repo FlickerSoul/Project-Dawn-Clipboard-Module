@@ -43,6 +43,9 @@ public class ClipboardFunctionQuery {
             "       function lookup(word){\n" +
             "           appPlayer.lookupWord(word)\n" +
             "       }\n"+
+            "       function blog(){\n" +
+            "           appPlayer.blog();\n" +
+            "       }\n"+
             "</script>\n" +
             "</body>\n" +
             "</html>";
@@ -72,7 +75,8 @@ public class ClipboardFunctionQuery {
     //定义发音筛选正则表达
     private static final Pattern NUM_PATTERN = Pattern.compile("^[0-9]+");
     private static final Pattern PROCESS_WORD_PATTERN = Pattern.compile("[^'a-zA-Z0-9ā--\\s]");
-    protected static final Pattern FIRST_LETTER_PATTERN = Pattern.compile("[a-z]");
+    protected static final Pattern TRIM_FIRST_LETTER_PATTERN = Pattern.compile("[a-zA-Z0-9-]");
+    protected static final Pattern FIRST_LETTER_PATTERN = Pattern.compile("[a-zA-Z]");
     private static Boolean isAutoPlaying = true;
 
     private static ExecutorService singThreadPool_API = Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, "KingSoft API Searching Thread"));
@@ -93,58 +97,43 @@ public class ClipboardFunctionQuery {
         }
     }
 
-    public static boolean lookupWord(String word){
+    public static boolean lookupWord(String originalWord){
         long ST = System.currentTimeMillis();
 
+        String word = ClipboardFunctionQuery.processWords(originalWord);
+        System.out.println(word);
         ClipboardSearchBar.setText(word);
 
         try {
             String firstLetter;
-            word = ClipboardFunctionQuery.processWords(word);
             HistoryArray.setCurrentWord(word);
             singThreadPool_API.execute(kingSoftAPIQuery.setWord(word));
-            firstLetter = word.toLowerCase().charAt(0) + "";
+            firstLetter = String.valueOf(word.toLowerCase().charAt(0));
             firstLetter = FIRST_LETTER_PATTERN.matcher(firstLetter).find() ? firstLetter : "spec_char";
-            PreparedStatement getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART1 + firstLetter + GET_ID_SQL_PART2); //最快
-            getIDPreparedStatement.setString(1, word);
-            ResultSet idResultSet = getIDPreparedStatement.executeQuery();
 
-            if(!idResultSet.next()){
-                getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART1 + firstLetter + GET_ID_SQL_PART2); //最快
-                getIDPreparedStatement.setString(1, word.toLowerCase());
-                idResultSet = getIDPreparedStatement.executeQuery();
-                if(!idResultSet.next()) {
-                    getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART1 + firstLetter + GET_ID_SQL_PART2);
-                    char[] cs=word.toLowerCase().toCharArray();
-                    cs[0]-=32;
-                    getIDPreparedStatement.setString(1, String.valueOf(cs));
-                    idResultSet = getIDPreparedStatement.executeQuery();
-                    if (!idResultSet.next()) {
-                        getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART3 + firstLetter + GET_ID_SQL_PART4);
-                        getIDPreparedStatement.setString(1, word.replaceAll(" ", "").replaceAll("-", ""));
-                        idResultSet = getIDPreparedStatement.executeQuery();
-                        if (!idResultSet.next()) {
-                            getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART3 + firstLetter + GET_ID_SQL_PART4);
-                            getIDPreparedStatement.setString(1, word.toLowerCase().replaceAll(" ", "").replaceAll("-", ""));
-                            idResultSet = getIDPreparedStatement.executeQuery();
-                            if(!idResultSet.next()) {
-                                getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART3 + firstLetter + GET_ID_SQL_PART4);
-                                cs=word.toLowerCase().replaceAll(" ", "").replaceAll("-", "").toCharArray();
-                                cs[0]-=32;
-                                getIDPreparedStatement.setString(1, String.valueOf(cs));
-                                idResultSet = getIDPreparedStatement.executeQuery();
-                                if (!idResultSet.next()){
-                                    EnDefRegion.setHtml(EMPTY_TEMPLATE);
-                                    Thesaurus.setHtml(EMPTY_TEMPLATE);
-                                    return false;
-                                }
-                            }
+            ResultSet idResultSet = ClipboardFunctionQuery.alternativeCheck(firstLetter, originalWord);
+
+            if(idResultSet.isClosed()) {
+                if (firstLetter == "spec_char") {
+                    idResultSet = ClipboardFunctionQuery.alternativeCheck(firstLetter, word);
+                    if (idResultSet.isClosed()) {
+                        System.out.println("second Phrase");
+                        char[] cs = word.toCharArray();
+                        int i = 0;
+                        for (; i < cs.length; i++) {
+                            if (TRIM_FIRST_LETTER_PATTERN.matcher(String.valueOf(cs[i])).find())
+                                break;
                         }
+                        firstLetter = String.valueOf(cs[i]);
+                        firstLetter = FIRST_LETTER_PATTERN.matcher(firstLetter).find() ? firstLetter : "spec_char";
+                        idResultSet = ClipboardFunctionQuery.alternativeCheck(firstLetter, String.valueOf(cs, i, cs.length - i));
                     }
+                } else {
+                    idResultSet = ClipboardFunctionQuery.alternativeCheck(firstLetter, word);
                 }
             }
 
-            String id= idResultSet.getString(1);
+            String id = idResultSet.getString(1);
 
             System.out.println("The word, " + word + ", has an id: " + id);
 
@@ -153,6 +142,9 @@ public class ClipboardFunctionQuery {
             ResultSet defResultSet = getDefPreparedStatement.executeQuery();
 
             Document document = Jsoup.parse(defResultSet.getString(1));
+
+            getDefPreparedStatement.close();
+            defResultSet.close();
 
             Element definition = document.selectFirst("div#definition");
             definition.attr("style", "margin-top: 10px;");
@@ -226,36 +218,45 @@ public class ClipboardFunctionQuery {
                 sub.attr("idx", num + "def");
                 Element temp = sub.nextElementSibling();
                 if(temp.className().equals("def")){
-                    temp.addClass("c-content");
-                    temp.attr("id", num + "def");
+                    temp.addClass("marginbox")
+                            .wrap("<div>")
+                            .parent()
+                            .addClass("c-content")
+                            .attr("id", num + "def")
+                            .attr("style", "box-shadow: inset 0px 11px 8px -10px #CCC, inset 0px -11px 8px -10px #CCC;");
                 }else {
-                    temp = temp.nextElementSibling().addClass("c-content");
-                    temp.attr("id", num + "def");
+                    temp = temp.nextElementSibling()
+                            .addClass("marginbox")
+                            .wrap("<div>")
+                            .parent()
+                            .addClass("c-content")
+                            .attr("id", num + "def")
+                            .attr("style", "box-shadow: inset 0px 11px 8px -10px #CCC, inset 0px -11px 8px -10px #CCC;");
                 }
 
                 Elements otherForm = temp.getElementsByClass("infl").remove();
                 if(otherForm.size() != 0){
                     sub.before("<div class=\"collapsible\" idx=\"" + num + "of\">Other Form</div>");
-                    Element of_container = sub.before("<div class=\"c-content\" id=\"" + num + "of\">").previousElementSibling();
+                    Element of_container = sub.before("<div>").previousElementSibling().addClass("marginbox").wrap("<div class=\"c-content\" id=\"" + num + "of\" style=\"box-shadow: inset 0px 11px 8px -10px #CCC, inset 0px -11px 8px -10px #CCC;\">");
                     of_container.appendChild(otherForm.first());
                 }
 
                 otherForm = temp.getElementsByClass("runon").remove();
                 if(otherForm.size() != 0){
-                    sub.before("<div class=\"collapsible\" idx=\"" + num + "rn\">Run-on</div>");
-                    Element runon_container = sub.before("<div class=\"c-content\" id=\"" + num + "rn\">").previousElementSibling();
+                    sub.before(new StringBuilder().append("<div class=\"collapsible\" idx=\"").append(num).append("rn\">Run-on</div>").toString());
+                    Element runon_container = sub.before("<div>").previousElementSibling().addClass("marginbox").wrap("<div class=\"c-content\" id=\"" + num + "rn\" style=\"box-shadow: inset 0px 11px 8px -10px #CCC, inset 0px -11px 8px -10px #CCC;\">");
                     runon_container.appendChild(otherForm.first());
                 }
                 num++;
             }
 
-            Elements syn = definition.select("div.pos > div.syn").addClass("c-content");
+            Elements syn = definition.select("div.pos > div.syn").addClass("marginbox").wrap("<div class=\"c-content\" style=\"box-shadow: inset 0px 11px 8px -10px #CCC, inset 0px -11px 8px -10px #CCC;\">");//.parents().addClass("c-content").attr("style", "box-shadow: inset 0px 11px 8px -10px #CCC, inset 0px -11px 8px -10px #CCC;");
 
             num = 0;
 
             for(Element sub : syn){
-                sub.before("<div class=\"collapsible\" idx=\"" + num + "sy\" style=\"padding: 20px, 20px, 20px, 20px;\">Thesaurus</div>");
-                sub.attr("id", num + "sy");
+                sub.parent().before("<div class=\"collapsible\" idx=\"" + num + "sy\" style=\"padding: 20px, 20px, 20px, 20px;\">Thesaurus</div>");
+                sub.parent().attr("id", num + "sy");
                 num++;
             }
 
@@ -266,6 +267,8 @@ public class ClipboardFunctionQuery {
             EnDefRegion.setHtml(HEAD + definition.toString() + TAIL);
 
             System.out.println("Time Consumed: " + (System.currentTimeMillis() - ST) + "ms");
+
+            System.gc();
 
             return true;
         }catch (SQLException e){
@@ -291,5 +294,55 @@ public class ClipboardFunctionQuery {
     public static void terminatePool(){
         singThreadPool_API.shutdown();
         multiThreadsPool_Audio.shutdown();
+    }
+
+    protected static ResultSet alternativeCheck(String firstLetter, String word){
+        ResultSet idResultSet = null;
+        PreparedStatement getIDPreparedStatement = null;
+        try {
+            getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART1 + firstLetter + GET_ID_SQL_PART2);
+            getIDPreparedStatement.setString(1, word);
+            idResultSet = getIDPreparedStatement.executeQuery();
+            if(!idResultSet.next()){
+                getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART1 + firstLetter + GET_ID_SQL_PART2);
+                getIDPreparedStatement.setString(1, word.toLowerCase());
+                idResultSet = getIDPreparedStatement.executeQuery();
+                System.out.println(word.toLowerCase() + "; " + firstLetter);
+                if(!idResultSet.next()) {
+                    getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART1 + firstLetter + GET_ID_SQL_PART2);
+                    char[] cs=word.toLowerCase().toCharArray();
+                    cs[0]-=32;
+                    getIDPreparedStatement.setString(1, String.valueOf(cs));
+                    idResultSet = getIDPreparedStatement.executeQuery();
+                    if (!idResultSet.next()) {
+                        getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART3 + firstLetter + GET_ID_SQL_PART4);
+                        getIDPreparedStatement.setString(1, word.replaceAll(" ", "").replaceAll("-", ""));
+                        idResultSet = getIDPreparedStatement.executeQuery();
+                        if (!idResultSet.next()) {
+                            getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART3 + firstLetter + GET_ID_SQL_PART4);
+                            getIDPreparedStatement.setString(1, word.toLowerCase().replaceAll(" ", "").replaceAll("-", ""));
+                            idResultSet = getIDPreparedStatement.executeQuery();
+                            if(!idResultSet.next()) {
+                                getIDPreparedStatement = connection.prepareStatement(GET_ID_SQL_PART3 + firstLetter + GET_ID_SQL_PART4);
+                                cs=word.toLowerCase().replaceAll(" ", "").replaceAll("-", "").toCharArray();
+                                cs[0]-=32;
+                                getIDPreparedStatement.setString(1, String.valueOf(cs));
+                                idResultSet = getIDPreparedStatement.executeQuery();
+                                if (!idResultSet.next()){
+                                    EnDefRegion.setHtml(EMPTY_TEMPLATE);
+                                    Thesaurus.setHtml(EMPTY_TEMPLATE);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+
+        }
+
+        return idResultSet;
     }
 }

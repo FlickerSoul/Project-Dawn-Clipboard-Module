@@ -85,7 +85,7 @@ public class KingSoftAPIQuery implements Runnable {
     public void parseWordFromKSAPI(String word){
         if(word.equals(null)) return;
         try {
-            Document apiPage = Jsoup.parse(new URL(HEAD + word + TAIL), 4000);
+            Document apiPage = Jsoup.parse(new URL(HEAD + word.replaceAll(" ", "+") + TAIL), 2000);
             Document wordTemplate = Jsoup.parse(TEMPLATE);
             wordTemplate.getElementById("key").text(word);
             Elements pron_url = apiPage.select("pron");

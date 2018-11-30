@@ -27,12 +27,13 @@ import javafx.stage.StageStyle;
 import me.flickersoul.dawn.functions.ClipboardFunctionQuery;
 import me.flickersoul.dawn.functions.HistoryArray;
 import me.flickersoul.dawn.functions.JSPlay;
-import me.flickersoul.dawn.functions.UIProperty;
+import me.flickersoul.dawn.functions.WrapedBooleanProperty;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.*;
 import java.awt.datatransfer.Clipboard;
+import java.io.File;
 import java.io.IOException;
 import java.net.BindException;
 import java.net.InetAddress;
@@ -42,8 +43,16 @@ import java.net.UnknownHostException;
 import static java.lang.Thread.sleep;
 
 public class ClipboardOnly extends Application implements ClipboardOwner {
-    private static UIProperty isIconified = new UIProperty(false);
-    private static UIProperty isFocused = new UIProperty(true);
+    public static final String CACHE_DIR = new StringBuilder(System.getProperty("user.home"))
+                                                            .append(File.separator )
+                                                            .append("Documents")
+                                                            .append(File.separator)
+                                                            .append("PD_Cache")
+                                                            .append(File.separator)
+                                                            .toString();
+
+    private static WrapedBooleanProperty isIconified = new WrapedBooleanProperty(false);
+    private static WrapedBooleanProperty isFocused = new WrapedBooleanProperty(true);
     private static BooleanProperty isListening = new SimpleBooleanProperty(true);
     private final KeyCombination previousWordCom = new KeyCodeCombination(KeyCode.LEFT, KeyCombination.ALT_DOWN);
     private final KeyCombination latterWordCom = new KeyCodeCombination(KeyCode.RIGHT, KeyCombination.ALT_DOWN);
@@ -51,19 +60,21 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
     private final KeyCombination chTab = new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
     private final KeyCombination thTab = new KeyCodeCombination(KeyCode.T, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
     private final KeyCombination scTab = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
-    private final KeyCombination playAudio = new KeyCodeCombination(KeyCode.P, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
+    private final KeyCombination playAudio = new KeyCodeCombination(KeyCode.Q, KeyCombination.CONTROL_DOWN);
+    private final KeyCombination focusKey = new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN);
+    private final KeyCombination escKey = new KeyCodeCombination(KeyCode.ESCAPE);
     private final Clipboard sysClip = Toolkit.getDefaultToolkit().getSystemClipboard();
 
-    SimpleDoubleProperty clickStartPointSX = new SimpleDoubleProperty();
-    SimpleDoubleProperty clickStartPointSY = new SimpleDoubleProperty();
-    SimpleDoubleProperty windowStartPointX = new SimpleDoubleProperty();
-    SimpleDoubleProperty windowStartPointY = new SimpleDoubleProperty();
+    private SimpleDoubleProperty clickStartPointSX = new SimpleDoubleProperty();
+    private SimpleDoubleProperty clickStartPointSY = new SimpleDoubleProperty();
+    private SimpleDoubleProperty windowStartPointX = new SimpleDoubleProperty();
+    private SimpleDoubleProperty windowStartPointY = new SimpleDoubleProperty();
 
     private String lastWord = "";
     private String tempWord;
     private boolean isImportedFromKindle = false;
     private boolean isMultiCopyingAllowed = true;
-    private boolean isFirstSwitched = false;
+    private boolean isFirstGainControl = false;
 
     private ToolBar topToolBar;
     private ClipboardSearchBar clipboardSearchBar;
@@ -86,17 +97,11 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
             System.exit(7);
         } catch (UnknownHostException e) {
             e.printStackTrace();
-            System.exit(7);
+            System.exit(8);
         } catch (IOException e) {
             e.printStackTrace();
-            System.exit(7);
+            System.exit(9);
         }
-
-        System.setProperty("https.proxyHost", "127.0.0.1");
-        System.setProperty("https.proxyPort", "1080");
-
-        System.setProperty("http.proxyHost", "127.0.0.1");
-        System.setProperty("http.proxyPort", "1080");
 
         Application.launch(args);
 
@@ -137,7 +142,7 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
                 isListening.setValue(true);
             else{
                 isListening.setValue(false);
-                isFirstSwitched = true;
+                isFirstGainControl = true;
             }
         });
         isAutoPlaying.getSwitchOn().addListener((observable, oldValue, newValue) -> ClipboardFunctionQuery.setAutoPlaying(newValue));
@@ -151,9 +156,7 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
         minButton.addEventHandler(MouseEvent.MOUSE_DRAGGED, event -> event.consume());
 
         hideButton.setCursor(Cursor.HAND);
-        hideButton.setOnMouseClicked(event -> {
-            clipboardStage.hide();
-        });
+        hideButton.setOnMouseClicked(event -> clipboardStage.hide());
         hideButton.addEventHandler(MouseEvent.MOUSE_DRAGGED, event -> event.consume());
 
         menuBar.setBackground(new Background(new BackgroundFill(Color.WHITE, null, null)));
@@ -201,6 +204,7 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
                     System.out.println("minimize window");
                 }else {
                     System.out.println("maximize window");
+                    clipboardSearchBar.requestSearchBoxFocused();
                 }
             }
         });
@@ -211,6 +215,7 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
                 Platform.runLater(() -> {
                     clipboardStage.setIconified(true);
                     clipboardStage.setIconified(false);
+                    clipboardSearchBar.requestSearchBoxFocused();
                 });
                 System.out.println("focus window");
             }
@@ -218,7 +223,7 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
 
 
         provider = Provider.getCurrentProvider(false);
-        provider.register(KeyStroke.getKeyStroke("ctrl alt shift O"), hotKey -> { //Cap letter
+        provider.register(KeyStroke.getKeyStroke("ctrl alt X"), hotKey -> { //Cap letter
             if(clipboardStage.isIconified()) {
                 this.maximizeWindow();
             }
@@ -226,13 +231,6 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
                 this.focusWindow();
             }else {
                 this.hideWindow();
-            }
-        });
-
-        scene.addEventFilter(KeyEvent.KEY_RELEASED, event -> {
-            if(event.getCode() == KeyCode.ESCAPE){
-                this.hideWindow();
-                System.out.println("esc");
             }
         });
 
@@ -251,6 +249,10 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
                 ClipboardPane.setTabSignValue(ClipboardPane.TH_TAB_NUM);
             }else if(scTab.match(event)){
                 HistoryArray.lookCurrentWordInGoogle();
+            }else if(focusKey.match(event)){
+                clipboardSearchBar.requestSearchBoxFocused();
+            }else if(escKey.match(event)){
+                this.hideWindow();
             }
         });
 
@@ -261,6 +263,9 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
         clipboardSearchBar.requestSearchBoxFocused();
 
         clipboardStage.setScene(scene);
+
+        ClipboardFunctionQuery.lookupWord("Welcome User!");
+
         clipboardStage.show();
 
         this.callUI();
@@ -330,7 +335,10 @@ public class ClipboardOnly extends Application implements ClipboardOwner {
 
     private void regainOwnership(Transferable t) {
         sysClip.setContents(t, this);
-        processContents(t);
+        if(isFirstGainControl)
+            isFirstGainControl = false;
+        else
+            processContents(t);
     }
 
     private void callUI(){

@@ -3,12 +3,16 @@ package me.flickersoul.dawn.functions;
 import javafx.scene.media.AudioClip;
 import javafx.scene.media.MediaException;
 
+import java.awt.*;
+import java.io.IOException;
+import java.net.URI;
 import java.util.concurrent.*;
 
 public class JSPlay {
     protected static String[] audioURL = new String[15];
     private static AudioThread audioThread = new AudioThread();
     private static FutureTask<Boolean> audioTask;
+    private static Desktop desktop = java.awt.Desktop.getDesktop();
 
     private static ExecutorService singleThreadPool = Executors.newSingleThreadExecutor((runnable) -> new Thread(runnable, "Audio Playing Thread"));
 
@@ -26,6 +30,30 @@ public class JSPlay {
     public void netPlay(String url){
         JSPlay.endTask(3l);
         singleThreadPool.execute(generateUrlTask(url));
+    }
+
+    public void blog(){
+        if(desktop.isSupported(Desktop.Action.BROWSE)) {
+            try {
+                desktop.browse(URI.create("https://blog.flicker-soul.me"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        System.gc();
+    }
+
+    public static void googleCurrentWord(String currentWord){
+        if(desktop.isSupported(Desktop.Action.BROWSE)) {
+            try {
+                desktop.browse(URI.create("https://www.google.com/search?q=" + currentWord.replaceAll(" ", "+")));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        System.gc();
     }
 
     public static void autoPlay(){
@@ -76,6 +104,7 @@ public class JSPlay {
                 e.printStackTrace();
             }
         }
+        audioTask = null;
     }
 }
 

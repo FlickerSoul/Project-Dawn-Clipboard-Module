@@ -1,5 +1,7 @@
 package me.flickersoul.dawn.functions;
 
+import me.flickersoul.dawn.ui.ClipboardOnly;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -9,9 +11,12 @@ import java.net.URL;
 public class CacheAudio implements Runnable {
     private String fileURL;
     private String fileName;
-    private static final String DIR_PATH = System.getProperty("user.home") + File.separator + "Documents" + File.separator + "PD_Cache" + File.separator;
-    private static final String FILE_PATH = "file:/" + DIR_PATH.replaceAll("\\\\", "/");
-    private static final boolean isWin = System.getProperty("os.name").equals("Windows 10");
+    public static final String DIR_PATH = new StringBuilder(ClipboardOnly.CACHE_DIR)
+                                                            .append("audio")
+                                                            .append(File.separator)
+                                                            .toString();
+    public static final String FILE_PATH = "file:/" + DIR_PATH.replaceAll("\\\\", "/");
+//    private static final boolean isWin = System.getProperty("os.name").equals("Windows 10");
     private static final File file_path_dir = new File(DIR_PATH);
 
     static {
@@ -29,12 +34,12 @@ public class CacheAudio implements Runnable {
 
     public CacheAudio(String fileURL, String fileName) {
         this.fileURL = fileURL;
-        this.fileName = DIR_PATH + fileName + ".mp3";
+        this.fileName = new StringBuilder(DIR_PATH).append(fileName).append(".mp3").toString();
     }
 
     @Override
     public void run() {
-        if(!isWin) return;
+//        if(!isWin) return;
         try (BufferedInputStream in = new BufferedInputStream(new URL(fileURL).openStream()); FileOutputStream fileOutputStream = new FileOutputStream(new File(fileName))) {
             byte dataBuffer[] = new byte[1024];
             int bytesRead;

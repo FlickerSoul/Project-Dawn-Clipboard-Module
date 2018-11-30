@@ -1,8 +1,5 @@
 package me.flickersoul.dawn.functions;
 
-import me.flickersoul.dawn.ui.ClipboardPane;
-import me.flickersoul.dawn.ui.SearchEngineRegion;
-
 public class HistoryArray {
     private static String[] historyArray = new String[30];
 
@@ -25,8 +22,7 @@ public class HistoryArray {
     }
 
     public static void lookCurrentWordInGoogle(){
-        SearchEngineRegion.setSearchContent(currentWord);
-        ClipboardPane.setTabSignValue(ClipboardPane.SC_TAB_NUM);
+        JSPlay.googleCurrentWord(currentWord);
     }
 
     /**

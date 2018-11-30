@@ -9,14 +9,16 @@ public class DBConnection {
     Connection DetailsDBConnection;
     Connection ExistingBooksDBConnection;
 
+//    public static final String
+
     public Connection getPRODBConnection(){
         return PRODBConnection;
     }
 
     public static void main(String[] args){
-        DBConnection dbConnection = new DBConnection();
-        dbConnection.establishDBConnections();
-        dbConnection.checkIntegrity();
+//        DBConnection dbConnection = new DBConnection();
+//        dbConnection.establishDBConnections();
+//        dbConnection.checkIntegrity();
     }
 
     public void establishDBConnections(){
