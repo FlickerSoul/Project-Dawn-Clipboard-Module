@@ -2,6 +2,7 @@ package me.flickersoul.dawn.ui;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.concurrent.Worker;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Tab;
@@ -13,30 +14,28 @@ import me.flickersoul.dawn.functions.HistoryArray;
 import me.flickersoul.dawn.functions.JSLookup;
 import netscape.javascript.JSObject;
 
-public class Thesaurus extends Tab {
-    private WebView webView;
-    private WebEngine webEngine;
+public class Thesaurus extends WebDisplayTab {
     private JSLookup app;
-    private String selection;
     private ContextMenu contextMenu;
-
-    private static SimpleStringProperty html = new SimpleStringProperty();
+    private static StringProperty html = new SimpleStringProperty();
+    public static void setHtml(String content){
+        html.set(content);
+    }
 
     public Thesaurus(){
-        super("Thesaurus");
-        this.setClosable(false);
+        super("Thesaurus", ClipboardPane.TH_TAB_NUM, "<div></div>");
+
         app = new JSLookup();
         contextMenu = WebContextMenu.getContextMenu();
 
-        webView = new WebView();
-        webEngine = webView.getEngine();
-        webEngine.loadContent("<div></div>");
-        webEngine.setUserStyleSheetLocation(this.getClass().getClassLoader().getResource("css/definition-common.css").toExternalForm());
+        WebView webView = getWebView();
+        WebEngine webEngine = getWebEngine();
 
-        webView.setContextMenuEnabled(false);
+        super.setStyleSheetLocation("/css/definition-common.css");
+
         webView.setOnMousePressed(event -> {
             if (event.getButton() == MouseButton.SECONDARY){
-                selection = (String)webView.getEngine().executeScript("window.getSelection().toString()");
+                String selection = (String)webView.getEngine().executeScript("window.getSelection().toString()");
                 if(selection.toCharArray().length == 0){
                     contextMenu.show(webView, event.getScreenX(), event.getScreenY());
                 }else{
@@ -50,7 +49,6 @@ public class Thesaurus extends Tab {
             }
         });
 
-        webEngine.setJavaScriptEnabled(true);
         webEngine.getLoadWorker().stateProperty().addListener(((observable, oldValue, newValue) -> {
             if (newValue == Worker.State.SUCCEEDED) {
                 JSObject player = (JSObject) webEngine.executeScript("window");
@@ -60,14 +58,10 @@ public class Thesaurus extends Tab {
 
         html.addListener((observable, oldValue, newValue) -> {
             Platform.runLater(() -> {
-                webEngine.loadContent(html.getValue());
+                webEngine.loadContent(newValue);
             });
         });
 
         this.setContent(webView);
-    }
-
-    public static void setHtml(String text){
-        html.setValue(text);
     }
 }

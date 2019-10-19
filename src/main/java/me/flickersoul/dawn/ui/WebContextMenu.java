@@ -1,19 +1,17 @@
 package me.flickersoul.dawn.ui;
 
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import me.flickersoul.dawn.functions.HistoryArray;
 
 public class WebContextMenu extends ContextMenu{
-    private static MenuItem previousWord;
-    private static MenuItem latterWord;
-    private static MenuItem searchOption;
-    private static WebContextMenu webContextMenu = new WebContextMenu();
 
-    public WebContextMenu(){
-        previousWord = new MenuItem("Previous (Alt + ←)");
-        latterWord = new MenuItem("Forward (Alt + →)");
-        searchOption = new MenuItem("Search ()");
+    private WebContextMenu(){
+        MenuItem previousWord = new MenuItem("Previous (Alt + ←)");
+        MenuItem latterWord = new MenuItem("Forward (Alt + →)");
+        MenuItem searchOption = new MenuItem("Search ()");
 
         previousWord.setOnAction(event -> HistoryArray.getPreviousWord());
         latterWord.setOnAction(event -> HistoryArray.getLatterWord());
@@ -22,7 +20,13 @@ public class WebContextMenu extends ContextMenu{
         this.getItems().addAll(previousWord, latterWord, searchOption);
     }
 
-    public static ContextMenu getContextMenu(){
-        return webContextMenu;
+    protected static ContextMenu getContextMenu(){
+        return new WebContextMenu();
+    }
+
+    public void addNewItemToMenu(String text, int index, EventHandler<ActionEvent> eventHandler){
+        MenuItem menuItem = new MenuItem(text);
+        menuItem.setOnAction(eventHandler);
+        this.getItems().add(index, menuItem);
     }
 }

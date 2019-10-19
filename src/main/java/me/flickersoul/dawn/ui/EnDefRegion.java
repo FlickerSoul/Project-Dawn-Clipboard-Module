@@ -1,40 +1,38 @@
 package me.flickersoul.dawn.ui;
 
-
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.input.MouseButton;
-import me.flickersoul.dawn.functions.ClipboardFunctionQuery;
-import me.flickersoul.dawn.functions.HistoryArray;
-import me.flickersoul.dawn.functions.JSPlay;
-import javafx.application.Platform;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.concurrent.Worker;
-import javafx.scene.control.Tab;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import me.flickersoul.dawn.functions.ClipboardFunctionQuery;
+import me.flickersoul.dawn.functions.HistoryArray;
+import me.flickersoul.dawn.functions.AudioPlay;
+import javafx.application.Platform;
+import javafx.concurrent.Worker;
 import netscape.javascript.JSObject;
 
-public class EnDefRegion extends Tab {
-    private WebView webView;
-    private WebEngine webEngine;
-    private JSPlay app;
+public class EnDefRegion extends WebDisplayTab {
+    private AudioPlay app;
     private ContextMenu contextMenu;
-    private String selection;
-    private static SimpleStringProperty html = new SimpleStringProperty();
+    private static StringProperty html = new SimpleStringProperty();
+    public static void setHtml(String content){
+        html.set(content);
+    }
 
     public EnDefRegion(){
-        super("English Definition");
-        this.setClosable(false);
+        super("English Definition", ClipboardPane.EN_TAB_NUM, "<div></div>");
 
-        app = new JSPlay();
-        webView = new WebView();
-        webEngine = webView.getEngine();
+        WebView webView = super.getWebView();
+        WebEngine webEngine = super.getWebEngine();
+
+        app = new AudioPlay();
         contextMenu = WebContextMenu.getContextMenu();
 
-        webView.setContextMenuEnabled(false);
         webView.setOnMousePressed(event -> {
             if (event.getButton() == MouseButton.SECONDARY){
-                selection = (String)webView.getEngine().executeScript("window.getSelection().toString()");
+                String selection = (String)webView.getEngine().executeScript("window.getSelection().toString()");
                 if(selection.toCharArray().length == 0){
                     contextMenu.show(webView, event.getScreenX(), event.getScreenY());
                 }else{
@@ -48,9 +46,7 @@ public class EnDefRegion extends Tab {
             }
         });
 
-        Platform.runLater(() -> webEngine.setUserStyleSheetLocation(this.getClass().getClassLoader().getResource("css/definition-common.css").toExternalForm()));
-        webEngine.setJavaScriptEnabled(true);
-        webEngine.loadContent("<div></div>");
+        super.setStyleSheetLocation("/css/definition-common.css");
         webEngine.getLoadWorker().stateProperty().addListener(((observable, oldValue, newValue) -> {
             if (newValue == Worker.State.SUCCEEDED) {
                 JSObject player = (JSObject) webEngine.executeScript("window");
@@ -59,15 +55,10 @@ public class EnDefRegion extends Tab {
         }));
 
         html.addListener(((observable, oldValue, newValue) -> {
-            Platform.runLater(() -> {
-                webEngine.loadContent(newValue);
-            });
+            Platform.runLater(() -> webEngine.loadContent(newValue));
         }));
 
-        this.setContent(webView);
-    }
 
-    public static void setHtml(String text){
-        html.setValue(text);
+        this.setContent(webView);
     }
 }

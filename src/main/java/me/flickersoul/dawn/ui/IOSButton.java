@@ -41,10 +41,10 @@ public class IOSButton extends Parent {
         this.getChildren().addAll(base, dot);
 
         switchOn.addListener((abs, oldState, newState) -> {
-            boolean isOn = newState.booleanValue();
+            boolean isOn = newState;
             translateTransition.setToX(isOn ? wid_size - wid_size/2 : 0);
             fillTransition.setFromValue(isOn ? Color.LIGHTGREY : Color.LIGHTGREEN);
-            fillTransition.setFromValue(isOn ? Color.LIGHTGREEN : Color.LIGHTGRAY);
+            fillTransition.setToValue(isOn ? Color.LIGHTGREEN : Color.LIGHTGRAY);
             parallelTransition.play();
         });
 
@@ -58,5 +58,9 @@ public class IOSButton extends Parent {
 
     protected BooleanProperty getSwitchOn(){
         return switchOn;
+    }
+
+    protected void setSwitchStatus(Boolean sign){
+        switchOn.setValue(sign);
     }
 }

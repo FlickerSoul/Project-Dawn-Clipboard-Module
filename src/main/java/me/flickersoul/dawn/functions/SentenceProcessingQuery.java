@@ -1,270 +1,226 @@
 package me.flickersoul.dawn.functions;
 
-import org.json.JSONObject;
+import com.alibaba.fastjson.JSONObject;
+import me.flickersoul.dawn.ui.ClipboardOnly;
+import me.flickersoul.dawn.ui.ProgressingAnimationController;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.regex.Pattern;
 
 import static me.flickersoul.dawn.functions.ClipboardFunctionQuery.*;
 
 public class SentenceProcessingQuery implements Runnable {
-    public static void main(String[] args){
-//        File file = new FileChooser().returnFilesUsingChooser()[0];
-//
-//        File file = new File("G:\\temp\\newfile2.txt");
-//        try {
-//            if(file != null && file.canRead()) {
-//                FileReader fr = new FileReader(file);
-//                int ch;
-//                while ((ch = fr.read()) != -1) {
-//                    System.out.println(new StringBuilder().append((char)ch).append(' ').append(ch).toString());
-//
-//                }
-//
-//                System.out.println("Time Consumed: " + (System.currentTimeMillis() - ST) + "ms");//13 + 10
-//                long ET = System.currentTimeMillis();
-//                fr.close();
-//                System.out.println("Time Consumed: " + (System.currentTimeMillis() - ET) + "ms" + "\n" );
-//            }
-//        } catch (FileNotFoundException e) {
-//            e.printStackTrace();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }//cannot close bug.
-//
-//        Thread thread = new Thread(new SentenceProcessingQuery(new File("G:\\\\temp\\\\newfile4.txt")));
-//        Thread thread = new Thread(new SentenceProcessingQuery("Image A fake pop-up notice warning that a virus has infected a computer. By Vindu Goel and Suhasini Raj MUMBAI, India — You know the messages. They pop up on your computer screen with ominous warnings like, “Your computer has been infected with a virus. Call our toll-free number immediately for help.” Often they look like alerts from Microsoft, Apple or Symantec. Sometimes the warning comes in a phone call. Most people ignore these entreaties, which are invariably scams. But one in five recipients actually talks to the fake tech-support centers, and 6 percent ultimately pay the operators to “fix” the nonexistent problem, according to recent consumer surveys by Microsoft. Law enforcement authorities, working with Microsoft, have now traced many of these boiler rooms to New Delhi, India’s capital and a hub of the global call-center industry. On Tuesday and Wednesday, police from two Delhi suburbs raided 16 fake tech-support centers and arrested about three dozen people. Last month, the Delhi authorities arrested 24 people in similar raids on 10 call centers. In Gautam Budh Nagar, one of the suburbs, 50 police officers swept into eight centers on Tuesday night. Ajay Pal Sharma, the senior superintendent of police there, said the scammers had extracted money from thousands of victims, most of whom were American or Canadian. “The modus operandi was to send a pop-up on people’s systems using a fake Microsoft logo,” Mr. Sharma said. After the victims contacted the call center, the operator, pretending to be a Microsoft employee, would tell them that their system had been hacked or attacked by a virus. The victims would then be offered a package of services ranging from $99 to $1,000 to fix the problem, he said. Such scams are widespread, said Courtney Gregoire, an assistant general counsel in Microsoft’s digital crimes unit. Microsoft, whose Windows software runs most personal computers, gets 11,000 or so complaints about the scams every month, she said, and its internet monitors spot about 150,000 pop-up ads for the services every day. The company’s own tech-support forums, where people can publicly post items, also see a steady stream of posts offering fake tech-support services. Although American authorities have busted such scams in places like Florida and Ohio, the backbone of the illicit industry is in India — in large part because of the country’s experience running so many of the world’s call centers. India’s outsourcing industry, which includes call centers, generates about $28 billion in annual revenue and employs about 1.2 million people. “The success of the legitimate industry has made it easier for the illegitimate industry there,” Ms. Gregoire said. As in any con, experience helps. “You have to convince them they have a problem,” she said. “You have to have the touch.” For tech companies, combating the impersonators is complicated by the fact that many legitimate tech-support operations, including some of Microsoft’s, operate from India. The scam is quite lucrative. Researchers at Stony Brook University, who published a detailed study of fake tech-support services last year, estimated that a single pop-up campaign spread over 142 web domains brought in nearly $10 million in just two months. Najmeh Miramirkhani, lead author of the research paper, said the network of entities involved in the scams was complex, with some making their own calls and others running the sites but outsourcing the calls to India. Many of the scammers also share data with one another. “This is an organized crime,” she said. Microsoft said it was working with other tech industry leaders such as Apple and Google, as well as law enforcement, to fight the scourge, which is migrating beyond the English-speaking world to target other users in their local languages. In the 16 countries surveyed by Microsoft, people in India and China were the most likely to pay the con artists. The problem extends beyond fake tech support, too. In July, the Justice Department said 24 people in eight states had been convicted for their roles in a scheme to use Indian call-center agents to impersonate tax collectors at the Internal Revenue Service. The thieves duped more than 15,000 people out of hundreds of millions of dollars. Thirty-two contractors in India were also indicted. Mr. Sharma said that in a similar con broken up by his department, call-center agents had impersonated Canadian tax authorities. Like the I.R.S., Microsoft and other legitimate technology companies do not call their users out of the blue. Nor do they send security alerts to the screen telling customers to call them. Ms. Miramirkhani had some simple advice to avoid being conned: Don’t pick up the phone. Vindu Goel reported from Mumbai, and Suhasini Raj from New Delhi. Follow Vindu Goel and Suhasini Raj on Twitter: @vindugoel and @suhasiniraj. A version of this article appears in print on , on Page B5 of the New York edition with the headline: That Fake Virus Alert And Its $1,000 ‘Repair’ May Come From India. Order Reprints | Today’s Paper | Subscribe\n"));
-//        Thread thread = null;
-//        try {
-//            thread = new Thread(new SentenceProcessingQuery(new URL("https://www.nytimes.com/2018/11/29/technology/microsoft-apple-worth-how.html")));
-//        } catch (MalformedURLException e) {
-//            e.printStackTrace();
-//        }
-//        thread.start();
-
-        WordMember wordMember = new WordMember("I", 1);
-        WordMember wordMember1 = new WordMember("Love", 2);
-        WordMember wordMember2 = new WordMember("You", 2);
-        WordMember wordMember3 = new WordMember("!", 3);
-
-        wordMember.addShowingNum().addShowingNum().addShowingNum().addShowingNum();
-        wordMember1.addShowingNum();
-        wordMember2.addShowingNum().addShowingNum();
-        wordMember3.addShowingNum().addShowingNum().addShowingNum();
-
-        wordMember.addSentSerial(2);
-
-        TrimmedWordMember trimmedWordMember = new TrimmedWordMember();
-
-        Thread thread = new Thread(new ProcessingThread().setTrimmedWordMember(trimmedWordMember, wordMember));
-
-        thread.start();
-
-    }
-
-    private TreeMap<Integer, String> sentenceMap = new TreeMap<>();
-    private int sentIterator = 0;
-    private TreeMap<String, WordMember> wordList = new TreeMap<>();
-    private TreeMap<String, TrimmedWordMember> trimmedWordList = new TreeMap<>();
+    private TreeMap<Integer, String> sentenceMap;
+    private TreeMap<String, WordMember> wordList;
+    private TreeMap<String, TrimmedWordMember> trimmedWordMemberMap;
     private File file;
     private String text;
+    private String title = "unknown title";
     private URL url;
-    private boolean isLastCharEndingSign = false;
+    private int sentIterator = 0;
+    private boolean lastCharEndingSign = false;
+    private boolean lastQuoteEndingSign = true; // TODO 制作 S. 名字
+    private boolean isSingleQuoteSignClosed = true;
+    private boolean isNSingleQuoteSignClosed = true; // nsq 和 sq 一次只出现一种的前提下
+    private boolean isDoubleQuoteSignClosed = true;
+    private boolean isParenthesisSignClosed = true;
+    private boolean isSquareBracketSignClosed = true;
+    private boolean isPreviousSingleQuote = false;
+    private boolean isPreviousNSingleQuote = false;
+    private boolean isPreviousSpaceSign = true; // 文章一开始标记为空格.
+    private boolean isPreviousPeriod = false;
+    private boolean isPreviousComma = false;
+    private DBProcessingQuery dbProcessingQuery = new DBProcessingQuery();
     private StringBuilder wordStringBuilder = new StringBuilder();
     private StringBuilder sentStringBuilder = new StringBuilder();
-    private ExecutorService processWordsPool = Executors.newFixedThreadPool(3, runnable -> new Thread(runnable, "Word Process Thread"));
+    private ExecutorService processWordsPool = Executors.newFixedThreadPool(10, runnable -> new Thread(runnable, "Word Process Thread"));
+    private ExecutorService wordInsertPool = Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, "Insert Word Thread"));
+    private List<Callable<Boolean>> processesArray = new LinkedList<>();
+    private Future<Boolean> wordFuture;
 
-    private static final Pattern CAP_LETTER_PATTERN = Pattern.compile("['A-Z]");
-    private static final Set<String> ABBR_WORDS_SET = new HashSet<>(Arrays.asList(
-            "q.t.s",
-            "q.t.",
-            "p.r.s",
-            "p.r.",
-            "mr.",
-            "mrs.",
-            "i.e.",
-            "e.g.",
-            "d.t.'s",
-            "St.",
-            "Ste.",
-            "Mss.",
-            "Mses.",
-            "Ms.",
-            "Mrs.",
-            "Mr.",
-            "Messrs.",
-            "A.",
-            "B.",
-            "C.",
-            "D.",
-            "E.",
-            "F.",
-            "G.",
-            "H.",
-            "I.",
-            "J.",
-            "K.",
-            "L.",
-            "M.",
-            "N.",
-            "O.", // 名字处理
-            "P.",
-            "Q.",
-            "R.",
-            "S.",
-            "T.",
-            "U.",
-            "V.",
-            "W.",
-            "X.",
-            "Y.",
-            "Z.",
-            "No.",
-            "Jan." //数字处理
-            ));
+    private ProgressingAnimationController controller;
 
-    public SentenceProcessingQuery(File file) {
-        this.file = file;
-    }
+    private static final String ABBR_SQL = "SELECT word FROM abbr_word WHERE word=?";
+    private static final Pattern NUMBER_PATTERN = Pattern.compile("\\d+");
+    private static final Pattern LETTER_PATTERN = Pattern.compile("[a-zA-Z]");
 
-    public SentenceProcessingQuery(String text) {
-        this.text = text;
-    }
+    class WordInsertThread implements Callable<Boolean> {
 
-    public SentenceProcessingQuery(URL url) {
-        this.url = url;
-    }
+        TreeMap<String, TrimmedWordMember> trimmedWordMembers;
 
-    public static boolean isText(String text){
-        if(text.equals(null) || text == null) return false;
-        return (CAP_LETTER_PATTERN.matcher(String.valueOf(text.charAt(0))).find() && (text.endsWith(".") || text.endsWith(";") || text.endsWith(".\"")));
-    }
+        protected WordInsertThread(TreeMap<String, TrimmedWordMember> trimmedWordMembers){
+            this.trimmedWordMembers = trimmedWordMembers;
+        }
 
-    public SentenceProcessingQuery setFile(File file) {
-        this.file = file;
-        //check whether accessible
-        return this;
-    }
+        @Override
+        public Boolean call() {
+            for(TrimmedWordMember member : trimmedWordMembers.values()){
+                dbProcessingQuery.insertToWordTable(member.getOriginalWord(), member.getId(), member.getLowercaseForm(), member.getLowercaseFormId(), member.getOccurrenceNum(), member.getSentRecords(), member.getDirs());
+            }
+            //直接传 member
 
-    public SentenceProcessingQuery setText(String text) {
-        this.text = text;
-        return this;
-    }
+            dbProcessingQuery.executeInsertWordsBatch();
 
-    public SentenceProcessingQuery setURL(URL url) {
-        this.url = url;
-        return this;
-    }
-
-    private void addToWordList(String word) {
-        if(wordList.containsKey(word)){
-            WordMember temp = wordList.get(word);
-            temp.addShowingNum().addSentSerial(sentIterator);
-        }else{
-            wordList.put(word, new WordMember(word, sentIterator));
+            return true;
         }
     }
 
-    private void addNewSent(String tempSentence){
-        sentenceMap.put(sentIterator++, tempSentence);
+    public SentenceProcessingQuery(File file, ProgressingAnimationController controller) {
+        this.file = file;
+        this.controller = controller;
     }
 
+    public SentenceProcessingQuery(String text, ProgressingAnimationController controller) {
+        this.text = text;
+        this.controller = controller;
+    }
+
+    public SentenceProcessingQuery(URL url, ProgressingAnimationController controller) {
+        this.url = url;
+        this.controller = controller;
+    }
+
+    /**
+     * add a word that is not in word list to the list
+     * @param word word that should be inputted
+     */
+
+    protected synchronized void addToWordList(String word, int sentSerial) {
+        if (wordList.containsKey(word)) {
+            WordMember temp = wordList.get(word);
+            temp.addShowingNum().addSentSerial(sentSerial);
+        } else {
+            wordList.put(word, new WordMember(word, sentSerial));
+        }
+    }
+
+    /**
+     * used for add new sentence to total sentence queue
+     * @param tempSentence sentence that should be inputted
+     */
+    private void addNewSent(String tempSentence){
+        sentenceMap.put(++sentIterator, tempSentence);
+    }
+
+    /**
+     * used for trim sentence StringBuilder Size
+     */
     private void trimSentBuilderSize() {
-        if(sentStringBuilder.length() > 512) {
-            sentStringBuilder.setLength(521);
+        if(sentStringBuilder.length() > 256) {
+            sentStringBuilder.setLength(256);
             sentStringBuilder.trimToSize();
 
         }
         sentStringBuilder.setLength(0);
     }
 
-    private void trimWordBuilderSize() {
-        if(wordStringBuilder.length() > 20) {
-            wordStringBuilder.setLength(20);
-            wordStringBuilder.trimToSize();
-
-        }
-        wordStringBuilder.setLength(0);
-    }
-
+    /**
+     * thread run method
+     */
     @Override
     public void run() {
         long ST = System.currentTimeMillis();
-        if(text != null){
+        sentenceMap = new TreeMap<>();
+        wordList = new TreeMap<>();
+        trimmedWordMemberMap = new TreeMap<>();
+
+        if(text != null && !text.equals("")){
+            //TODO set Title
             char[] tempArray = text.toCharArray();
+            controller.setProgress(0.1);
             for(char sub : tempArray){
                 appendProcessing((int)sub);
             }
 
-//            return true;
         }else if(url != null){
+            String json = null;
             try {
-                 String json = Jsoup.connect(new StringBuilder("https://mercury.postlight.com/parser?url=").append(url.toString()).toString())
+                  json = Jsoup.connect("https://mercury.postlight.com/parser?url=" + url.toString())
                         .ignoreContentType(true)
                         .header("Accept", "application/json")
                         .header("Content-Type","application/json")
                         .header("x-api-key", "EaHXKMmVBHblTqpd9Q5Zxswu9oB68NIPImNSABbx")
                         .method(org.jsoup.Connection.Method.GET)
                         .execute().body();
-                 if(json != null){
-                     Document content = Jsoup.parse(new JSONObject(json).getString("content"));
-                     char[] tempArray = content.text().toCharArray();
-                     for(char sub : tempArray){
-                         appendProcessing((int)sub);
-                     }
-                 }else{
-                     System.out.println("Cannot open URL");
-                 }
             } catch (IOException e) {
                 e.printStackTrace();
-                //do something, a pop-up or error message.
+                System.err.println("Bad Connection!");
+            }
+
+            if(json != null){
+                JSONObject document = JSONObject.parseObject(json);
+
+                title = document.getString("title");
+
+                Document content = Jsoup.parse(document.getString("content"));
+                content.select("p").prepend("\\↑↓");
+                char[] tempArray = content.text().replaceAll("\\\\↑↓", "\n").toCharArray();
+                controller.setProgress(0.1);
+                for(char sub : tempArray){
+                    appendProcessing((int)sub);
+                }
+            }else{
+                System.err.println("Bad Connection");
             }
 
         }else if(file != null){
+            title = file.getName();
+
             try {
                 if(file.canRead()) {
                     FileReader fr = new FileReader(file);
                     int character;
+                    controller.setProgress(0.1);
                     while ((character = fr.read()) != -1) {
                         appendProcessing(character);
                     }
                     fr.close();
                 }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
 
-        Iterator iterator = wordList.entrySet().iterator();
-        while(iterator.hasNext()){
-            Map.Entry entry = (Map.Entry) iterator.next();
-            String key = entry.getKey().toString();
-            System.out.println(key);
-        }
-        System.out.println("\n");
-        Iterator sent = sentenceMap.entrySet().iterator();
-        while(sent.hasNext()){
-            Map.Entry entry = (Map.Entry) sent.next();
-            System.out.println(entry.getKey().toString() + " " + entry.getValue().toString());
+        controller.setProgress(0.4);
+
+        try {
+            processWordsPool.invokeAll(processesArray);
+            System.out.println("invoke all");
+            sortTrimmedWordMember(sentenceMap);
+            controller.setProgress(0.6);
+            System.out.println("Words collection status: " + (wordFuture.get() ? "is Done" : "error!"));
+            controller.setProgress(0.9);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
         }
 
-//        return false;
-        System.out.println("Time Consumed: " + (System.currentTimeMillis() - ST) + "ms");//13 + 10
+        System.out.println("==========\nFinish Extracting Words!\nStart Shutting down\n==========");
+
+        sentenceMap = null;
+        wordList = null;
+        trimmedWordMemberMap = null;
+
+        processWordsPool.shutdown();
+        wordInsertPool.shutdown();
+        if(!(processWordsPool.isShutdown() && wordInsertPool.isShutdown())){
+            System.err.println("Something wrong with the thread pool shutdown procedure");
+        }
+
+        System.out.println("\nprocesses done: " + (System.currentTimeMillis() - ST) + "ms");
+        ClipboardOnly.updateMaterialTableColumns();
+        controller.setProgress(1);
     }
 
     /**
@@ -273,58 +229,113 @@ public class SentenceProcessingQuery implements Runnable {
      */
     private void appendProcessing(int character){
         if(isSeparateSign(character)){
-            if(isLastCharEndingSign){
-                if(isQuoteSign(character)){
-                    appendCharacterToSent(character);
-                }else if(isSpace(character)) {
-                    setLastCharEndingSignFalse();
-                    submitSentence(character);
-                }else {
-                    appendCharacterToWord(character);
-                    appendCharacterToSent(character);
+            if(isSpace(character)) {
+                setPreviousSpaceSign(true);
+                processUnclosedSingleQuotes();
+            } else {
+                setPreviousSpaceSign(false);
+            }
+
+            if(isPreviousPeriod) {
+                if(checkAbbrWord(wordStringBuilder)) {
+                    appendCharacterToWord('.');
+                }else{
+                    setLastCharEndingSign(true);
                 }
-            }else {
-                submitWord();
+                appendCharacterToSent('.');
+                trimWordBuilderSize();
+            }
+
+            if(lastCharEndingSign){
+                if(checkQuoteSignClosed()){
+                    if (isPreviousSpaceSign) {
+                        submitSentence(character);
+                        setLastCharEndingSign(false);
+                    } else {
+                        appendCharacterToWord(character);
+                        appendCharacterToSent(character);
+                    }
+                } else {
+                    appendCharacterToSent(character);
+                    if(isQuoteSign(character)) {
+                        processQuoteSigns(character);
+                    } else {
+                        setLastCharEndingSign(false);
+                    }
+                }
+            } else if(isQuoteSign(character)){
+                appendCharacterToSent(character);
+                processQuoteSigns(character);
+            } else {
+                trimWordBuilderSize();
                 appendCharacterToSent(character);
             }
+
+            if(isPreviousPeriod)
+                setPreviousPeriod(false);
         }else if(isEndingSign(character)){
-            if(character == '.' && checkAndProcessAbbrWord(wordStringBuilder)){
-                appendCharacterToSent(character);
+            if(isPreviousSpaceSign) {
+                setPreviousSpaceSign(false);
+            }
+            if(character == '.'){
+                setPreviousPeriod(true);
             }else {
-                setLastCharEndingSignTrue();
-                //在下一句开头时候提交句子
-                submitWord();
+                if(isPreviousPeriod)
+                    setPreviousPeriod(false);
+                setLastCharEndingSign(true);
+                trimWordBuilderSize();
                 appendCharacterToSent(character);
             }
         }else if(character == 10){
-            if(sentStringBuilder.length() == 0 && character == 10 || character == 13){
-
-            }else {
-                if(wordStringBuilder.length() != 0)
-                    submitWord();
+            if(isPreviousSpaceSign)
+                setPreviousSpaceSign(false);
+            if(isPreviousPeriod)
+                setPreviousPeriod(false);
+            if(sentStringBuilder.length() != 0)
                 submitSentence(character);
-            }
-            setLastCharEndingSignFalse();
-        }else if(character == 13){
-
+            if(wordStringBuilder.length() != 0)
+                trimWordBuilderSize();
+            setLastCharEndingSign(false);
         }else {
+            if(isPreviousSpaceSign)
+                setPreviousSpaceSign(false);
+            if(isPreviousPeriod){
+                appendCharacterToWord('.');
+                appendCharacterToSent('.');
+                setPreviousPeriod(false);
+            }
+            if(isPreviousSingleQuote){
+                appendCharacterToWord('’');
+                setPreviousSingleQuote(false);
+            }
+            if(isPreviousNSingleQuote){
+                appendCharacterToWord('\'');
+                setPreviousNSingleQuote(false);
+            }
             appendCharacterToWord(character);
             appendCharacterToSent(character);
         }
+
+    }
+
+    private void setLastQuoteEndingSign(boolean sign) {
+        lastQuoteEndingSign = sign;
+    }
+
+    private boolean isComma(int character) {
+        return character == ',';
+    }
+
+    private void appendCharacterToWord(int character){
+        wordStringBuilder.append((char)character);
     }
 
     /**
-     * set isLastCharEndingSign true
+     * set lastCharEndingSign to @param sign
+     * @param sign the sign for lastCharEndingSign
      */
-    private void setLastCharEndingSignTrue(){
-        isLastCharEndingSign = true;
-    }
-
-    /**
-     * set isLastCharEndingSign false
-     */
-    private void setLastCharEndingSignFalse(){
-        isLastCharEndingSign = false;
+    private void setLastCharEndingSign(boolean sign){
+        lastCharEndingSign = sign;
     }
 
     /**
@@ -332,17 +343,22 @@ public class SentenceProcessingQuery implements Runnable {
      * @param character char in int
      */
     private void submitSentence(int character){
-        this.addNewSent(sentStringBuilder.append(character == 10 || character == 13 ? ' ' : (char) character).toString());
+        String sentence = sentStringBuilder.append(character == 10 || character == 13 ? ' ' : (char) character).toString();
+        this.addNewSent(sentence);
+        processesArray.add(new SubSentenceThread(sentence, sentIterator, this));
         this.trimSentBuilderSize();
     }
 
-    /**
-     * append @param character to temp word
-     * @param character
-     */
-    private void appendCharacterToWord(int character){
-        wordStringBuilder.append((char)character);
+    private void trimWordBuilderSize() {
+        if(wordStringBuilder.length() > 10) {
+            wordStringBuilder.setLength(10);
+            wordStringBuilder.trimToSize();
+
+        }
+        wordStringBuilder.setLength(0);
     }
+
+
 
     /**
      * append @param character to temp sent
@@ -353,19 +369,11 @@ public class SentenceProcessingQuery implements Runnable {
     }
 
     /**
-     * submit temp word to word list
-     */
-    private void submitWord(){
-        this.addToWordList(wordStringBuilder.toString());
-        this.trimWordBuilderSize();
-    }
-
-    /**
      * check whether the character is one of the ending signs
      * @param character char in int
      * @return true when the character is one of the ending signs
      */
-    private boolean isEndingSign(int character){
+    private static boolean isEndingSign(int character){
         return character == '.' || character == '?' || character == '!';
     }
 
@@ -374,8 +382,8 @@ public class SentenceProcessingQuery implements Runnable {
      * @param character char in int
      * @return return true when the character is one of the separating signs
      */
-    private boolean isSeparateSign(int character){
-        return character == ' ' || character == ';' || character == ',' || character == ':' || character == '\'' || character == '(' || character == ')' || character == '\"' || character == '“' || character == '”';
+    protected static boolean isSeparateSign(int character){
+        return character == ' ' || character == ';' || character == ',' || character == '\"' || character == '“' || character == '”' || character == '\'' || character == '‘' || character == '’' || character == '(' || character == ')'  || character == ':' || character == '[' || character == ']' || character == '…';
     }
 
     /**
@@ -383,8 +391,8 @@ public class SentenceProcessingQuery implements Runnable {
      * @param character char in int
      * @return return true when the character is one of the quoting signs
      */
-    private boolean isQuoteSign(int character){
-        return character == '’' || character == '\'' || character == '(' || character == ')' || character == '\"' || character == '“' || character == '”';
+    private static boolean isQuoteSign(int character){
+        return character == '“' || character == '”' || character == '\"' || character == '‘' || character == '’' || character == '\'' || character == '(' || character == ')' || character == '[' || character == ']';
     }
 
     /**
@@ -392,28 +400,196 @@ public class SentenceProcessingQuery implements Runnable {
      * @param character char in int
      * @return return true when the character is a spece
      */
-    private boolean isSpace(int character){
+    private static boolean isSpace(int character){
         return character == ' ';
     }
 
     /**
-     *
-     * @param tempWord
+     * check whether it's a abbr word
+     * @param tempWordMember temp word
      */
-    private boolean checkAndProcessAbbrWord(StringBuilder tempWord){
-        if(ABBR_WORDS_SET.contains(tempWord + ".") || tempWord.toString().contains(".")){
-            tempWord.append('.');
-            return true;
-        }else{
-            return false;
+    private boolean checkAbbrWord(StringBuilder tempWordMember){
+        return checkWhetherInAbbrWordList(tempWordMember.toString() + '.') || tempWordMember.toString().contains(".");
+    }
+
+    private boolean checkWhetherInAbbrWordList(String word){
+        try(Connection connection = DBConnection.establishDictionaryConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(ABBR_SQL);){
+            preparedStatement.setString(1, word);
+            return !preparedStatement.executeQuery().isClosed();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private boolean checkWhetherTheWordAreNumbers(StringBuilder tempWordMember){
+        String tempWord = tempWordMember.toString();
+        return NUMBER_PATTERN.matcher(tempWord).find() && !LETTER_PATTERN.matcher(tempWord).find();
+    }
+
+    private void setSingleQuoteSignClosed(boolean sign){
+        isSingleQuoteSignClosed = sign;
+    }
+
+    private void setNSingleQuoteSignClosed(boolean sign){
+        isNSingleQuoteSignClosed = sign;
+    }
+
+    private void setDoubleQuoteSignClosed(boolean sign){
+        isDoubleQuoteSignClosed = sign;
+    }
+
+    private void setParenthesisSignClosed(boolean sign){
+        isParenthesisSignClosed = sign;
+    }
+
+    private void setSquareBracketSignClosed(boolean sign){
+        isSquareBracketSignClosed = sign;
+    }
+
+    private void setPreviousSingleQuote(boolean sign){
+        isPreviousSingleQuote = sign;
+    }
+    
+    private void setPreviousNSingleQuote(boolean sign){
+        isPreviousNSingleQuote = sign;
+    }
+
+    private void setPreviousSpaceSign(boolean sign){
+        isPreviousSpaceSign = sign;
+    }
+
+    private void setPreviousPeriod(boolean sign){
+        isPreviousPeriod = sign;
+    }
+
+    private void setPreviousComma(boolean sign) {
+        isPreviousComma = sign;
+    }
+    
+    /**
+     * process all quote signs
+     * @param character character in int
+     */
+    private void processQuoteSigns(int character){
+        if(character == '‘') {
+            setSingleQuoteSignClosed(false);
+        }else if(character == '’'){
+            if(!isPreviousSingleQuote)
+                setPreviousSingleQuote(true);
+        }else if(character == '\''){
+            //前面是否有空格，如果没有，则是缩写或者反单括号’, 如果有则是‘
+            if(isPreviousSpaceSign)
+                setNSingleQuoteSignClosed(false);
+            if(!isPreviousNSingleQuote)
+                setPreviousNSingleQuote(true);
+        }else if(character == '“'){
+            setDoubleQuoteSignClosed(false);
+        }else if(character == '”'){
+            setDoubleQuoteSignClosed(true);
+        }else if(character == '\"'){
+            if(isPreviousSpaceSign)
+                setDoubleQuoteSignClosed(false);
+            else
+                setDoubleQuoteSignClosed(true);
+        }else if(character == '(') {
+            setParenthesisSignClosed(false);
+        }else if(character == ')') {
+            setParenthesisSignClosed(true);
+        }else if(character == '['){
+            setSquareBracketSignClosed(false);
+        }else if(character == ']'){
+            setSquareBracketSignClosed(true);
         }
     }
+
+    /**
+     * check whether all the signs are closed
+     * @return true when all the signs are closed
+     */
+    private boolean checkQuoteSignClosed(){
+        return (isSingleQuoteSignClosed || isNSingleQuoteSignClosed) && isDoubleQuoteSignClosed && isParenthesisSignClosed && isSquareBracketSignClosed;
+    }
+
+    /**
+     * process unclosed single quote signs
+     */
+    private void processUnclosedSingleQuotes(){
+        if(isPreviousSingleQuote){
+            setSingleQuoteSignClosed(true);
+            setPreviousSingleQuote(false);
+        } else if (isPreviousNSingleQuote) {
+            setNSingleQuoteSignClosed(true);
+            setPreviousNSingleQuote(false);
+        }
+    }
+
+    private TrimmedWordMember checkExistence(WordMember wordMember, TreeMap<Integer, String> sentMap){
+        if(wordMember.getTempId() == WordMember.NOT_A_WORD_ID){
+            return null;
+        }
+
+        String originalWord = wordMember.getOriginalWord();
+
+        TreeMap<Integer, HashSet<String>> tempMap = new TreeMap<>();
+
+        if(trimmedWordMemberMap.containsKey(originalWord)){
+            for(int i : wordMember.getSentRecords()){
+                HashSet<String> tempSet = new HashSet<>();
+                tempSet.add(sentMap.get(i));
+                tempMap.put(i, tempSet);
+            }
+            trimmedWordMemberMap.get(originalWord).addNewOccurrenceNum(wordMember.getOccurrenceNum()).addNewSentRecords(tempMap);
+
+            return null;
+        }else{
+            for(int i : wordMember.getSentRecords()){
+                HashSet<String> tempSet = new HashSet<>();
+                tempSet.add(sentMap.get(i));
+                tempMap.put(i, tempSet);
+            }
+
+            return new TrimmedWordMember(originalWord, wordMember.getLowerCaseForm(),
+                                        wordMember.getTempId(), wordMember.getTempLowercaseFormId(),
+                                        wordMember.getOccurrenceNum(), tempMap, wordMember.getDirs());
+        }
+    }
+
+    private void sortTrimmedWordMember(TreeMap<Integer, String> sentMap) {
+        for(Map.Entry<String, WordMember> entry : wordList.entrySet()){
+            TrimmedWordMember trimmedWordMember = checkExistence(entry.getValue(), sentMap);
+            if(trimmedWordMember != null){
+                trimmedWordMemberMap.put(trimmedWordMember.getOriginalWord(), trimmedWordMember);
+            }
+        }
+
+        dbProcessingQuery.insertNewMaterial(title);
+        wordFuture = wordInsertPool.submit(new WordInsertThread(trimmedWordMemberMap));
+    }
+
 }
 
 class WordMember {
     private String word;
+    private String lowerCaseForm; // word -> lower case
+    private String originalWord;
+    private Elements dirs;
+    private int tempId;
+    private int tempLowercaseFormId;
     private int occurrenceNum;
-    private ArrayList<Integer> sentRecords = new ArrayList<>();
+    protected static final int NOT_FOUND_ID = -1;
+    protected static final int NOT_A_WORD_ID = -2;
+    private static final String SOMETHING_WRONG = "SOMETHING_WRONG";
+
+    private TreeSet<Integer> sentRecords = new TreeSet<>();
+
+    private static final String IRV_SQL = "SELECT original FROM irregularv WHERE p=? OR pp=?";
+    private static final String IRN_SQL = "SELECT original FROM irregularn WHERE form1=? OR form2=? OR form3=?";
+
+    //所有格
+    private static final Pattern POSSESSIVE_S = Pattern.compile("[a-zA-Z]+[^s][']s$");
+    private static final Pattern POSSESSIVES = Pattern.compile("[a-zA-Z]+[s][']$");
 
     /**
      * init a word member.
@@ -421,7 +597,9 @@ class WordMember {
      * @param firstSentSerial the sentence serial where this word first shows
      */
     public WordMember(String word, int firstSentSerial) {
-        this.word = word;
+        this.word = word.replaceAll("’", "'");
+        lowerCaseForm = word.toLowerCase();
+        wordTransformation();
         occurrenceNum = 1;
         sentRecords.add(firstSentSerial);
     }
@@ -457,161 +635,300 @@ class WordMember {
      * get this word member's word identity
      * @return the word, in string, this word member represents
      */
-    public String getWord(){
+    protected String getWord(){
         return word;
     }
 
-    /**
-     * get the number of occurrence
-     * @return this word member's occurrence number
-     */
-    public int getOccurrenceNum(){
+    protected String getOriginalWord(){
+        return originalWord;
+    }
+
+    protected int getTempId(){
+        return tempId;
+    }
+
+    protected int getTempLowercaseFormId(){
+        return tempLowercaseFormId;
+    }
+
+    protected String getLowerCaseForm(){
+        return lowerCaseForm;
+    }
+
+    protected int getOccurrenceNum(){
         return occurrenceNum;
     }
 
-    /**
-     * get all the sentence records as a ArrayList
-     * @return a ArrayList of all sentence records
-     */
-    public ArrayList<Integer> getSentSerial(){
+    protected TreeSet<Integer> getSentRecords(){
         return sentRecords;
     }
 
+    public Elements getDirs() {
+        return dirs;
+    }
+
+    private void wordTransformation(){
+        String tempWord;
+        tempId = getWordID(tempWord = originalWord = word);
+
+        if(tempId == NOT_A_WORD_ID) {
+            return;
+        }else if(tempId == NOT_FOUND_ID) {
+            tempWord = checkAndRemoveQuoteSign(word);
+            tempId = getWordID(tempWord);
+        }
+
+        if(lowerCaseForm.equals(tempWord))
+            tempLowercaseFormId = tempId;
+        else {
+            tempLowercaseFormId = getWordID(lowerCaseForm);
+            if(tempLowercaseFormId == NOT_FOUND_ID) {
+                lowerCaseForm = checkAndRemoveQuoteSign(lowerCaseForm);
+                tempLowercaseFormId = getWordID(lowerCaseForm);
+                if(tempLowercaseFormId != NOT_FOUND_ID) {
+                    if (tempLowercaseFormId == tempId)
+                        lowerCaseForm = tempWord;
+                    else
+                        lowerCaseForm = getOriginalWord(tempLowercaseFormId);
+                }
+            } else {
+                if(tempLowercaseFormId == tempId)
+                    lowerCaseForm = tempWord;
+                else
+                    lowerCaseForm = getOriginalWord(tempLowercaseFormId);
+            }
+        }
+
+        if(tempId != NOT_FOUND_ID){
+            originalWord = getOriginalWord(tempId);
+        }else if(tempLowercaseFormId != NOT_FOUND_ID){
+            originalWord = lowerCaseForm;
+            tempId = tempLowercaseFormId;
+        } else {
+            originalWord = tempWord;
+        }
+    }
+
+    private int getWordID(String word){
+        if(!FIRST_LETTER_PATTERN.matcher(word).find()){
+            return NOT_A_WORD_ID;
+        }
+
+        String tempWord = word;
+        String firstLetter;
+
+        try (Connection connection = DBConnection.establishDictionaryConnection();
+             PreparedStatement irv = connection.prepareStatement(IRV_SQL);
+             PreparedStatement irn = connection.prepareStatement(IRN_SQL)) {
+
+            irv.setString(1, word);
+            irv.setString(2, word);
+            ResultSet queryResult = irv.executeQuery();
+            if (queryResult.isClosed()) {
+                irn.setString(1, word);
+                irn.setString(2, word);
+                irn.setString(3, word);
+                queryResult = irn.executeQuery();
+
+                if (!queryResult.isClosed()) {
+                    tempWord = queryResult.getString(1);
+                }
+            } else {
+                tempWord = queryResult.getString(1);
+            }
+
+            queryResult.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        firstLetter = String.valueOf(tempWord.toLowerCase().charAt(0));
+        firstLetter = FIRST_LETTER_PATTERN.matcher(firstLetter).find() ? firstLetter : "spec_char";
+
+        try(ResultSet resultSet = ClipboardFunctionQuery.alternativeCheck(firstLetter, tempWord)) {
+            if(!resultSet.isClosed()){
+                return resultSet.getInt(1);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return NOT_FOUND_ID;
+    }
+
+    private String getOriginalWord(int tempId){
+        try(Connection connection = DBConnection.establishDictionaryConnection();
+            PreparedStatement getDefPreparedStatement = connection.prepareStatement(ClipboardFunctionQuery.GET_DEF_SQL)){
+
+            getDefPreparedStatement.setInt(1, tempId);
+            ResultSet defResultSet = getDefPreparedStatement.executeQuery();
+
+            Document document = Jsoup.parse(defResultSet.getString(1));
+            Element word = document.selectFirst("div.hw > b");
+
+            dirs = document.select("a.au");
+
+            defResultSet.close();
+
+            return word.text().replaceAll("·", "");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return SOMETHING_WRONG;
+    }
+
+    private String checkAndRemoveQuoteSign(String word){
+        if (word.contains("'")) {
+            if (POSSESSIVE_S.matcher(word).matches()) {
+                char[] array = word.toCharArray();
+                return String.copyValueOf(array, 0, array.length - 2);
+            } else if (POSSESSIVES.matcher(word).matches()) {
+                char[] array = word.toCharArray();
+                return String.copyValueOf(array, 0, array.length - 1);
+            }
+        }
+
+        return word;
+    }
 }
 
-class TrimmedWordMember {
+class TrimmedWordMember{
     private String originalWord;
-    private int wordID;
-    private int showingNum;
-    private TreeSet<String> showedForms = new TreeSet();
-    private ArrayList<Integer> sentSerial = new ArrayList<>();
+    private String lowercaseForm;
+    private int id;
+    private int lowercaseFormId;
+    private int occurrenceNum;
+    private TreeMap<Integer, HashSet<String>> sentRecords = new TreeMap<>();
+    private Elements dirs;
 
-    public TrimmedWordMember(){
-
-    }
-
-    public void setOriginalWord(String originalWord){
+    public TrimmedWordMember(String originalWord, String lowercaseForm, int id, int lowercaseFormId, int firstOccurrenceNum, TreeMap<Integer, HashSet<String>> sentRecords, Elements dirs){
         this.originalWord = originalWord;
+        this.lowercaseForm = lowercaseForm;
+        this.id = id;
+        this.lowercaseFormId = lowercaseFormId;
+        this.occurrenceNum = firstOccurrenceNum;
+        this.sentRecords.putAll(sentRecords);
+        this.dirs = dirs;
     }
 
-    public void setWordID(int id){
-        this.wordID = id;
+    protected TrimmedWordMember addNewOccurrenceNum(int newOccurrenceNum){
+        this.occurrenceNum += newOccurrenceNum;
+        return this;
     }
 
-    public void setShowingNum(int num){
-        this.showingNum = num;
+    protected void addNewSentRecords(TreeMap<Integer, HashSet<String>> newSentRecords){
+        this.sentRecords.putAll(newSentRecords);
     }
 
-    public void setShowedForms(TreeSet<String> showedForms){
-        this.showedForms = showedForms;
+    protected String getOriginalWord(){
+        return originalWord;
     }
 
-    public void pushShowedForms(String form){
-        this.showedForms.add(form);
+    protected String getLowercaseForm(){
+        return lowercaseForm;
     }
 
-    public void setSentSerial(ArrayList<Integer> sentSerial){
-        this.sentSerial = sentSerial;
+    protected int getOccurrenceNum(){
+        return occurrenceNum;
+    }
+
+    protected int getId(){
+        return id;
+    }
+
+    protected int getLowercaseFormId(){
+        return lowercaseFormId;
+    }
+
+    protected TreeMap<Integer, HashSet<String>> getSentRecords(){
+        return sentRecords;
     }
 
     @Override
     public String toString(){
-        StringBuilder string = new StringBuilder("This trimmed word is ").append(originalWord).append(", has a ID ")
-                .append(wordID).append(", has been shown for ").append(showingNum)
-                .append(" times, and has been in these sentences: ");
-        Iterator iterator = sentSerial.iterator();
-        while(iterator.hasNext()){
-            string.append(iterator.next()).append(" ");
-        }
-        return string.toString();
+        return new StringBuilder(getOriginalWord()).append(", has a ID ").append(id).append(", and has occurred ").append(occurrenceNum).append(" times")
+                .append("\n").append("the lowercase form is \"").append(lowercaseForm).append("\" has a ID: ").append(lowercaseFormId)
+                .append("\n").append("in sentence ").append(sentRecords)
+                .append("\n").toString();
+    }
+
+    public Elements getDirs() {
+        return dirs;
     }
 }
 
-class ProcessingThread implements Runnable {
-    private int lastNum = 0;
-    private static final Pattern PROCESS_WORD_PATTERN = Pattern.compile("[^'a-zA-Z0-9ā--\\s]");
-    private TrimmedWordMember tempTrimmedWordMember;
-    private WordMember wordMember;
-    private Connection connection = ClipboardFunctionQuery.connection;
+class SubSentenceThread implements Callable<Boolean>{
+    private String sentence;
+    private int sentSerial;
+    private StringBuilder wordStringBuilder = new StringBuilder();
+    private SentenceProcessingQuery sentenceProcessingQuery;
+    private boolean previousBackQuoteSign = false;
+    private boolean previousNBackQuoteSign = false;
 
-    private static final int NOT_FOUND_ID = -1;
-    private static final String GET_WORDS_WITH_SAME_ID_SQL = "SELECT c1word_value FROM all_words_content WHERE c0_id=?";
-
-    @Override
-    public void run() {
-        checkWordExistence(tempTrimmedWordMember, wordMember);
+    public SubSentenceThread(String sentence, int sentSerial, SentenceProcessingQuery sentenceProcessingQuery){
+        this.sentence = sentence.trim();
+        this.sentSerial = sentSerial;
+        this.sentenceProcessingQuery = sentenceProcessingQuery;
+        System.out.println(sentSerial + " " + sentence);
     }
 
-    public ProcessingThread setTrimmedWordMember(TrimmedWordMember tempTrimmedWordMember, WordMember wordMember){
-        this.tempTrimmedWordMember = tempTrimmedWordMember;
-        this.wordMember = wordMember;
 
-        return this;
-    }
-
-    public void checkWordExistence(TrimmedWordMember trimmedWordMember, WordMember wordMember){
-        String originalWord = wordMember.getWord();
-        String word = ClipboardFunctionQuery.processWords(originalWord);
-
-        if(!FIRST_LETTER_PATTERN.matcher(wordMember.getWord()).find()){
-            trimmedWordMember.setWordID(NOT_FOUND_ID);
-            return;
-        }
-
-        try {
-            String firstLetter;
-            firstLetter = String.valueOf(word.toLowerCase().charAt(0));
-            firstLetter = FIRST_LETTER_PATTERN.matcher(firstLetter).find() ? firstLetter : "spec_char";
-
-            ResultSet idResultSet = ClipboardFunctionQuery.alternativeCheck(firstLetter, originalWord);
-
-            if(idResultSet.isClosed()) {
-                if (firstLetter == "spec_char") {
-                    idResultSet = ClipboardFunctionQuery.alternativeCheck(firstLetter, word);
-                    if (idResultSet.isClosed()) {
-                        char[] cs = word.toCharArray();
-                        int i = 0;
-                        for (; i < cs.length; i++) {
-                            if (TRIM_FIRST_LETTER_PATTERN.matcher(String.valueOf(cs[i])).find())
-                                break;
-                        }
-                        firstLetter = String.valueOf(cs[i]);
-                        firstLetter = FIRST_LETTER_PATTERN.matcher(firstLetter).find() ? firstLetter : "spec_char";
-                        idResultSet = ClipboardFunctionQuery.alternativeCheck(firstLetter, String.valueOf(cs, i, cs.length - i));
-                    }
+    private void processChar(char character){
+        if(SentenceProcessingQuery.isSeparateSign(character)){
+            if(character == ' '){
+                if(previousBackQuoteSign) {
+                    appendCharacterToWord('’');
+                    previousBackQuoteSign = false;
+                } else if(previousNBackQuoteSign) {
+                    appendCharacterToWord('\'');
+                    previousNBackQuoteSign = false;
                 } else {
-                    idResultSet = ClipboardFunctionQuery.alternativeCheck(firstLetter, word);
+                    sentenceProcessingQuery.addToWordList(wordStringBuilder.toString(), sentSerial);
+                    trimWordBuilderSize();
                 }
+            }else if(character == '’') {
+                previousBackQuoteSign = true;
+            } else if(character == '\'') {
+                previousNBackQuoteSign = true;
+            }
+        } else if(character == 10){
+            System.out.println("10~~~~~");
+        } else {
+            if(previousBackQuoteSign){
+                appendCharacterToWord('’');
+                previousBackQuoteSign = false;
+            } else if(previousNBackQuoteSign){
+                appendCharacterToWord('\'');
+                previousNBackQuoteSign = false;
             }
 
-            int id;
-            if(!idResultSet.isClosed()) {
-                id = idResultSet.getInt(1);
-
-                trimmedWordMember.setShowingNum(wordMember.getOccurrenceNum());
-
-                PreparedStatement getWordsWithSameIDStatement = connection.prepareStatement(GET_WORDS_WITH_SAME_ID_SQL);
-                getWordsWithSameIDStatement.setInt(1, id);
-                ResultSet wordsWithSameID = getWordsWithSameIDStatement.executeQuery();
-
-                if (wordsWithSameID.isClosed())
-                    trimmedWordMember.setShowedForms(null);
-                else {
-                    while (wordsWithSameID.next()) {
-                        trimmedWordMember.pushShowedForms(wordsWithSameID.getString(1));
-                    }
-                }
-
-                trimmedWordMember.setSentSerial(wordMember.getSentSerial());
-            }else
-                id = NOT_FOUND_ID;
-
-            trimmedWordMember.setWordID(id);
-
-            System.out.println("inner" + trimmedWordMember);
-        } catch (SQLException e) {
-            e.printStackTrace();
+            appendCharacterToWord(character);
         }
     }
 
+    /**
+     * used for trim word StringBuilder size
+     */
+    private void trimWordBuilderSize() {
+        if(wordStringBuilder.length() > 10) {
+            wordStringBuilder.setLength(10);
+            wordStringBuilder.trimToSize();
+        }
+        wordStringBuilder.setLength(0);
+    }
+
+    private void appendCharacterToWord(char character){
+        wordStringBuilder.append(character);
+    }
+
+    @Override
+    public Boolean call() {
+        char tempArray[] = sentence.toCharArray();
+        for(char letter : tempArray){
+            processChar(letter);
+        }
+
+        return true;
+    }
 }

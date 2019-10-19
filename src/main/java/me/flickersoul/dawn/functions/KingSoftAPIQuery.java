@@ -16,8 +16,7 @@ public class KingSoftAPIQuery implements Runnable {
 
     String word;
 
-    private final String TEMPLATE = "<html>\n" +
-            "    <head></head>\n" +
+    private static final String TEMPLATE = "<html><head></head>\n" +
             "    <body style=\"font: 15px;\">\n" +
             "        <div class=\"entry\" id=\"definition\" style=\"margin-top: 10px;\">\n" +
             "            <div class=\"pos\">\n" +
@@ -70,20 +69,20 @@ public class KingSoftAPIQuery implements Runnable {
             "    </body>\n" +
             "</html>";
 
-    private final String EMPTY_TEMPLATE = "<div style=\"margin-top: 10px;\"> <h3> 查找错误,无结果 </h3> </div>";
+    public static final String EMPTY_TEMPLATE = "<div style=\"margin-top: 10px;\"> <h3> 查找错误,无结果 </h3> </div>";
 
     @Override
     public void run(){
-        this.parseWordFromKSAPI(this.word);
+        this.parseWordFromKSAPI();
     }
 
     public KingSoftAPIQuery setWord(String word){
-        this.word = word;
+        this.word = word.replaceAll(" ", "+");
         return this;
     }
 
-    public void parseWordFromKSAPI(String word){
-        if(word.equals(null)) return;
+    public void parseWordFromKSAPI(){
+        if(word.equals("")) return;
         try {
             Document apiPage = Jsoup.parse(new URL(HEAD + word.replaceAll(" ", "+") + TAIL), 2000);
             Document wordTemplate = Jsoup.parse(TEMPLATE);
@@ -126,9 +125,10 @@ public class KingSoftAPIQuery implements Runnable {
             ChDefRegion.setHtml(wordTemplate.toString());
         } catch (MalformedURLException e){
             ChDefRegion.setHtml(EMPTY_TEMPLATE);
+            System.err.println("Cannot Load Chinese definition from iciba.com");
         } catch (IOException e) {
             ChDefRegion.setHtml(EMPTY_TEMPLATE);
-            e.printStackTrace();
+            System.err.println("Cannot Load Chinese definition from iciba.com");
         }
     }
 }

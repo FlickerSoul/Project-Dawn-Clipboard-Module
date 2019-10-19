@@ -1,0 +1,100 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>DetailTab</title>
+  <script src="jquery.js"></script>
+</head>
+<body>
+	<div class="outer-box" style="overflow: auto;">
+<div class="box">
+  <div class="circle"> <i class="navicon menu pointer"></i> </div>
+  <i class="css-icon-close closes pointer" id="close"></i>
+  <section class="container">
+    <ul id="content-ul">
+      <!--<li class="list-item">-->
+      <li class="list-item"> Welcome To This Main Window! </li>
+      <li class="list-item"> Click The Menu Button To Start, If You Haven't Import Anything Yet </li>
+      <li class="list-item"> If you click on a specific word, the example sentences will be shown here.</li>
+    </ul>
+  </section>
+</div>
+	</div>
+<div class="post">
+  <ul class="menu-ul">
+    <li><a href="javascript:void(0)" onclick="imports()">Import Material</a></li>
+    <li><a href="javascript:void(0)" onclick="openM()">Material List</a></li>
+    <li><a href="javascript:void(0)" onclick="openUW()">Unknown Word List</a></li>
+    <li><a href="javascript:void(0)" onclick="openFW()">Familiar Word List</a></li>
+    <li><a href="javascript:void(0)" onclick="openWS()">Word Selector</a></li>
+    <li><a href="javascript:void(0)" onclick="openS()">Settings</a></li>
+    <li><a href="javascript:void(0)" onclick="openA()">About</a></li>
+  </ul>
+</div>
+
+<script>
+$(document).ready(function(){
+
+//clickable menu-icon to open up the post
+$('.circle').click(function() {
+$('.post').fadeIn(500);
+$('.circle').addClass('full');
+$('.menu').css('display', 'none');
+$('.closes').css('visibility', 'visible');
+$('.post').addClass('open-text');
+$('.container').css('display', 'none');
+
+
+
+});
+
+$('.closes').click(function() {
+$(this).css('visibility', 'hidden');
+$('.post').removeClass('open-text');
+$('.circle').removeClass('full');
+$('.post').fadeOut(100);
+$('.menu').css('display', 'block');
+
+$('.container').css('display', 'block');
+});
+
+});
+</script> 
+<script>
+    function imports() {
+        document.getElementById('close').click();
+        windows.importMaterial();
+    }
+
+    function openM() {
+        document.getElementById('close').click();
+        windows.openMaterialTable()
+    }
+
+    function openUW(){
+        document.getElementById('close').click();
+        windows.openUnknownWordTable();
+    }
+
+    function openFW(){
+        document.getElementById('close').click();
+        windows.openFamiliarWordTable();
+    }
+
+    function openWS() {
+        document.getElementById('close').click();
+        windows.openWordSelector();
+    }
+
+    function openS(){
+        document.getElementById('close').click();
+        windows.openSettings()
+    }
+
+    function openA(){
+        document.getElementById('close').click();
+        windows.openAbout();
+    }
+</script>
+</body>
+</html>

@@ -23,7 +23,7 @@ public class SearchEngineRegion extends Tab {
         });
 
         this.setClosable(false);
-        this.setText("Google~");
+        this.setText("Search");
         this.setContent(webView);
     }
 

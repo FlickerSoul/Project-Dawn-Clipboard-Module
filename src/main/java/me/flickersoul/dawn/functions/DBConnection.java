@@ -1,141 +1,115 @@
 package me.flickersoul.dawn.functions;
 
+import org.apache.commons.dbcp2.BasicDataSource;
+
+import java.io.File;
 import java.sql.*;
 
 public class DBConnection {
-    Connection PRODBConnection;
-    Connection UnfDBConnection;
-    Connection FDBConnection;
-    Connection DetailsDBConnection;
-    Connection ExistingBooksDBConnection;
+    private static BasicDataSource DicConnection = new BasicDataSource();
+    private static BasicDataSource MaterialConnection = new BasicDataSource();
 
-//    public static final String
+    public static final String CACHE_DIR = new StringBuilder(System.getProperty("user.home"))
+            .append(File.separator )
+            .append("Documents")
+            .append(File.separator)
+            .append("PD_Cache")
+            .append(File.separator)
+            .toString();
 
-    public Connection getPRODBConnection(){
-        return PRODBConnection;
-    }
+    public static final String DB_DIR = new StringBuilder(CACHE_DIR).append("database").append(File.separator).toString();
+    public static final String FILE_DIR = new StringBuilder("jdbc:sqlite:").append(DB_DIR).toString();
+    public static final String MATERIAL_REPO = new StringBuilder(FILE_DIR).append("MaterialRepo.db").toString();
+    private static final File DIR_FILE = new File(DB_DIR);
 
-    public static void main(String[] args){
-//        DBConnection dbConnection = new DBConnection();
-//        dbConnection.establishDBConnections();
-//        dbConnection.checkIntegrity();
-    }
+    static {
+        DIR_FILE.mkdirs();
+        if(DIR_FILE.canRead() && DIR_FILE.canWrite()){
 
-    public void establishDBConnections(){
-        try{
-            String URL;
-
-            URL = "src/main/resources/dic/PRO.db";
-            System.out.println("Connecting to " + URL);
-            PRODBConnection = DriverManager.getConnection("jdbc:sqlite:" + URL);
-            System.out.println("Connect to dic DB Successfully");
-
-
-            URL = "src/main/resources/PersonalFolder/UnfDB.db";
-            System.out.println("Connecting to " + URL);
-            UnfDBConnection = DriverManager.getConnection("jdbc:sqlite:" + URL);
-            System.out.println("Connect to Unfamilar Words DB Successfully");
-
-            URL = "src/main/resources/PersonalFolder/FDB.db";
-            System.out.println("Connecting to " + URL);
-            FDBConnection = DriverManager.getConnection("jdbc:sqlite:" + URL);
-            System.out.println("Connect to Familar Words DB Successfully");
-
-            URL = "src/main/resources/PersonalFolder/DetailsDB.db";
-            System.out.println("Connecting to " + URL);
-            DetailsDBConnection = DriverManager.getConnection("jdbc:sqlite:" + URL);
-            System.out.println("Connect to Word Details DB Successfully");
-
-            URL = "src/main/resources/PersonalFolder/ExistingBooks.db";
-            System.out.println("Connecting to " + URL);
-            ExistingBooksDBConnection = DriverManager.getConnection("jdbc:sqlite:" + URL);
-            System.out.println("Connect to Existing Books DB Successfully");
-
-        }catch (SQLException sqlException){
-            System.out.println("Failed to Connect DB");
-            sqlException.printStackTrace();
         }
-    }
 
-    public static Connection getConnection(String filePath) throws SQLException {
-        return DriverManager.getConnection(filePath);
-    }
+        String dir = "jdbc:sqlite:"+ DBConnection.class.getResource("/dic/PRO.db").toExternalForm();
+        DicConnection.setDriverClassName("org.sqlite.JDBC");
+        System.out.println(dir = dir.contains("jar") ? "jdbc:sqlite::resource:dic/PRO.db" : dir);
+        DicConnection.setUrl(dir);
+        DicConnection.setInitialSize(1);
+        DicConnection.setMinIdle(1);
+        DicConnection.setMaxIdle(4);
 
-    public void checkIntegrity() {
-        Statement statement;
-        String sql;
-        try {
-            statement = UnfDBConnection.createStatement();
-            sql = "CREATE TABLE IF NOT EXISTS words(" +
-                    "word TEXT PRIMARY KEY NOT NULL" +
-                    ");";
-            statement.execute(sql);
-            System.out.println("Unfamiliar Words DB is intact");
+        MaterialConnection.setDriverClassName("org.sqlite.JDBC");
+        MaterialConnection.setUrl(MATERIAL_REPO);
+        MaterialConnection.setInitialSize(1);
+        MaterialConnection.setMinIdle(1);
+        MaterialConnection.setMaxIdle(1);
 
-            statement = FDBConnection.createStatement();
-            sql = "CREATE TABLE IF NOT EXISTS  words(" +
-                    "word TEXT PRIMARY KEY NOT NULL" +
-                    ");";
-            statement.execute(sql);
-            System.out.println("Familiar Words DB is intact");
+        //check integrity
+        try(Connection connection = establishMaterialRepoConnection();
+            Statement statement = connection.createStatement()){
+            statement.execute("CREATE TABLE IF NOT EXISTS total_material_index(" +
+                    "id INTEGER PRIMARY KEY NOT NULL, " +
+                    "material_name TEXT NOT NULL," +
+                    "description TEXT," +
+                    "shown INTEGER DEFAULT 1)"); // 1 展示， 0 不展示
+            System.out.println("total_index created");
 
-            statement = DetailsDBConnection.createStatement();
-            sql = "CREATE TABLE IF NOT EXISTS words(" +
-                    "word TEXT PRIMARY KEY, " +
-                    "pronounciation_uk TEXT NOT NULL, " +
-                    "pronounciation_us TEXT NOT NULL, " +
-                    "definition_cn TEXT NOT NULL, " +
-                    "definition_en TEXT NOT NULL, " +
-                    "eg_sentence_ol TEXT NOT NULL, " +
-                    "eg_sentence_book TEXT NOT NULL, " +
-                    "audio_uk_filepath TEXT NOT NULL, " +
-                    "audio_us_filepath TEXT NOT NULL" +
-                    ");";
-            statement.execute(sql);
-            System.out.println("Word Details DB is intact");
+            /*
+            用于单词查询，sentence info放json，格式为"serial" : HashMap<Integer, TreeSet<Integer>>
+             */
+            statement.execute("CREATE TABLE IF NOT EXISTS total_word(" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "word TEXT NOT NULL, " +
+                    "word_id INTEGER," +
+                    "known INTEGER DEFAULT 2, " + // 2 为未分类(default) 1 已知 0 未知 -1 不需要知道 //TODO 加一个分类方法 sort，一次性解决所有表列中的未分类
+                    "sentence_info TEXT," +
+                    "shown INTEGER DEFAULT 1," + // 1 true 0 false
+                    "has_audio INTEGER DEFAULT 2," + // 1 true 0 false
+                    "audio_dir TEXT)");
 
-            statement = ExistingBooksDBConnection.createStatement();
-            sql = "CREATE TABLE IF NOT EXISTS book(" +
-                    "book_id INTEGER PRIMARY KEY NOT NULL, " +
-                    "book_name TEXT NOT NULL, " +
-                    "db_filepath TEXT NOT NULL " +
-                    ");";
-            statement.execute(sql);
-            System.out.println("Book List DB is intact");
+            statement.execute("CREATE UNIQUE INDEX IF NOT EXISTS word_name_index ON total_word (word)");
+            System.out.println("total_word created and indexed");
 
-            System.out.println("Check Completed");
-        }catch (SQLException e){
-            System.out.println("Failed to Check Integrity");
-            e.printStackTrace();
-        }
-    }
+            System.out.println("Create Word Repo");
 
-    public ResultSet getTestResult(){
-        try {
-            Statement statement = PRODBConnection.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT word_value FROM all_words LIMIT 150 OFFSET 15620");
-            return resultSet;
         } catch (SQLException e) {
             e.printStackTrace();
-            return null;
+            System.out.println("Don't know whether the database is complete or not, exiting now");
+            System.exit(-9);
         }
     }
 
-    public void insertData(String word, String pro_uk, String pro_us, String def_cn, String def_en, String eg_ol, String eg_book, String filepath_uk, String filepath_us){
+    public static Connection establishDictionaryConnection(){
         try {
-            String sql ="INSERT INTO words (word, pronounciation, definition_cn, definistion_en, eg_sentence_ol, eg_sentence_book, audio_filepath)" +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            PreparedStatement preparedStatement = DetailsDBConnection.prepareStatement(sql);
-            preparedStatement.setString(1, word);
-            preparedStatement.setString(2, pro_uk);
-            preparedStatement.setString(3, pro_us);
-            preparedStatement.setString(4, def_cn);
-            preparedStatement.setString(5, def_en);
-            preparedStatement.setString(6, eg_ol);
-            preparedStatement.setString(7, eg_book);
-            preparedStatement.setString(8, filepath_uk);
-            preparedStatement.setString(9, filepath_us);
-            preparedStatement.executeUpdate();
+            return DicConnection.getConnection();
+        } catch (SQLException e) {
+            System.err.println("Failed to connect to dictionary");
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static Connection establishMaterialRepoConnection(){
+        try {
+            return MaterialConnection.getConnection();
+        } catch (SQLException e) {
+            System.err.println("Failed to connect to material database");
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
+    public static void closeDictionaryConnection(){
+        try {
+            DicConnection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void closeMaterialRepoConnection(){
+        try{
+            MaterialConnection.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }

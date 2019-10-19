@@ -22,7 +22,7 @@ public class HistoryArray {
     }
 
     public static void lookCurrentWordInGoogle(){
-        JSPlay.googleCurrentWord(currentWord);
+        AudioPlay.googleCurrentWord(currentWord);
     }
 
     /**

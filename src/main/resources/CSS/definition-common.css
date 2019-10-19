@@ -124,6 +124,7 @@ body {
 }
 .pos i.v {
   color: gray;
+    margin-bottom: 4px;
 }
 
 /* Definition */
@@ -195,10 +196,10 @@ ul.sens {
 }
 
 /** The vt tag. **/
-.pos > div.def ul.sens > li > .v {
+.pos > div.def ul.sens > li.v {
   display: block;
   font-style: italic;
-  padding-bottom: 5px;
+  padding-bottom: 10px;
   padding-top: 5px;
 }
 .pos .v + br {
@@ -218,18 +219,9 @@ ul.sens {
   padding-top: 5px;
 }
 
-/* Definition - Runons */
-.pos > div.def > ul.runon {
-  list-style-type: none;
-  padding-top: 10px;
-  padding-left: 0px;
-}
-.pos > div.def > ul.runon > li {
-  padding-bottom: 3px;
-}
-
 /* Example Sentences */
 .pos > div.sent {
+    margin-top: 7px;
 }
 .pos > div.sent > p {
   font-weight: bold;
@@ -241,21 +233,6 @@ ul.sens {
 }
 .pos > div.sent > ul > li {
   padding-bottom: 3px;
-}
-
-
-/* History */
-.pos > div.et {
-}
-.pos > div.et:empty {
-  padding:0px;
-}
-/* History: Origin */
-.pos > div.et > div.orig {
-  display: inline-block;
-}
-/* History: First Use */
-.pos > div.et > div.date {
 }
 
 /* Usage */
@@ -460,6 +437,9 @@ a.kLink nobr {
 .pos ul {
   margin: 0 0 0 0;
 }
+ul.runon{
+    padding-left: 15px;
+}
 .pos ul li.backup_06_19_2009 {
   line-height: 18px;
   list-style-type: none;
@@ -554,4 +534,9 @@ a.kLink nobr {
 .pos > div {
     padding-left: 15px;
     padding-right: 15px;
+}
+
+div.marginbox{
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
